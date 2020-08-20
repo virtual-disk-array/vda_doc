@@ -11,7 +11,9 @@ traditional disk array, which has one or multiple controllers and
 several disks. The user can set raid level, encryption or other
 features on the controller (currently, only raid0 is supported). In
 VDA, all the controllers and disks are SPDK applications. They are
-connected by NVMeOF. Below is the architecture of VDA:
+connected by NVMeOF. The virtual disk array could be used as
+persistent volumes of kubernets or openstack cinder backend
+driver. Below is the architecture of VDA:
 
 .. image:: /images/vda_cluster_arch.png
 

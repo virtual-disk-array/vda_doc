@@ -11,6 +11,7 @@ Welcome to vda's documentation!
    :caption: Contents:
 
    Introduction
+   GettingStarted
 
 
 Indices and tables
