@@ -6,13 +6,21 @@ describe the basic usage of it. Below is the components we will deploy:
 
 .. image:: /images/minimal_deployment.png
 
-The vda_cli, portal, monitor, cn_agent, dn_agent are belongs to the VDA package. The sqlite is the database we will use. Most of linux distributions install it by default. The cn_spdk_app and dn_spdk_app are SPDK applications. In this tutorial, we use the buildin application spdk_tgt. All of them are deployed in a ubuntu 20.04 server. But they should be deployed to most of linux distributions. 
+The vda_cli, portal, monitor, cn_agent, dn_agent are belongs to the
+VDA package. The sqlite is the database we will use. Most of linux
+distributions install it by default. The cn_spdk_app and dn_spdk_app
+are SPDK applications. In this tutorial, we use the buildin
+application spdk_tgt. All of them are deployed in a ubuntu 20.04
+server. But they should be deployed to most of the linux
+distributions. The server should have at least 8G memory, and we will
+allocate 4G huge page for spdk applications.
 
 Install
 -------
 
 make sure system is up to date
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code-block:: none
 
    sudo apt update -y && sudo apt upgrade -y && sudo reboot
@@ -41,7 +49,7 @@ environment, we could run below script in the spdk directory.
 
 .. code-block:: none
 
-   sudo HUGEMEM=5000 scripts/setup.sh
+   sudo HUGEMEM=4096 scripts/setup.sh
 
 When run the spdk application, we should disable auto examine, so we
 should use the --wait-for-rpc parameter, and invoke an API to disable
@@ -73,7 +81,7 @@ without root permission.
 
    sudo chmod 777 /tmp/dn.sock
 
-We do the simiar thing for the controller node spdk application:
+We do the similar things for the controller node spdk application:
 
 .. code-block:: none
 

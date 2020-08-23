@@ -6,3 +6,5 @@ Getting started
    :caption: Contents
 
    MinimalDeployment
+   MultipleComponentsInOneServer
+   MultipleServers

@@ -7,7 +7,7 @@ Welcome to vda's documentation!
 ===============================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Contents:
 
    Introduction
