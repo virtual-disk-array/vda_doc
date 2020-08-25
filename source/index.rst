@@ -12,6 +12,7 @@ Welcome to vda's documentation!
 
    Introduction
    GettingStarted
+   Configuration
 
 
 Indices and tables
