@@ -182,7 +182,7 @@ launch two dn_agents
 .. code-block:: none
 
    vda_dn_agent --listener 127.0.0.1 --port 9720 --sock-path /tmp/dn0.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}' > /tmp/vda_dn_agent_0.log 2>&1 &
-   vda_dn_agent --listener 127.0.0.1 --port 9720 --sock-path /tmp/dn1.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4421"}' > /tmp/vda_dn_agent_1.log 2>&1 &
+   vda_dn_agent --listener 127.0.0.1 --port 9721 --sock-path /tmp/dn1.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4421"}' > /tmp/vda_dn_agent_1.log 2>&1 &
 
 launch two cn_agents
 ^^^^^^^^^^^^^^^^^^^^
@@ -190,7 +190,7 @@ launch two cn_agents
 .. code-block:: none
 
    vda_cn_agent --listener 127.0.0.1 --port 9820 --sock-path /tmp/cn0.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4430"}' > /tmp/vda_cn_agent_0.log 2>&1 &
-   vda_cn_agent --listener 127.0.0.1 --port 9821 --sock-path /tmp/cn1.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4431"}' > /tmp/vda_cn_agent_0.log 2>&1 &
+   vda_cn_agent --listener 127.0.0.1 --port 9821 --sock-path /tmp/cn1.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4431"}' > /tmp/vda_cn_agent_1.log 2>&1 &
 
 create several disk arrays
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -209,10 +209,10 @@ prepare 4 files, will use them as physical disks:
 
 .. code-block:: none
 
-   dd if=/dev/zero of=/tmp/a.img bs=1M count=1 seek=1023
-   dd if=/dev/zero of=/tmp/b.img bs=1M count=1 seek=1023
-   dd if=/dev/zero of=/tmp/c.img bs=1M count=1 seek=1023
-   dd if=/dev/zero of=/tmp/d.img bs=1M count=1 seek=1023
+   dd if=/dev/zero of=/tmp/a.img bs=1M count=256
+   dd if=/dev/zero of=/tmp/b.img bs=1M count=256
+   dd if=/dev/zero of=/tmp/c.img bs=1M count=256
+   dd if=/dev/zero of=/tmp/d.img bs=1M count=256
 
 Add the four physical disks to the two disk nodes, each node has two
 disks:
