@@ -1,39 +1,28 @@
 Multiple Components In One Server
 =================================
 
-In a production envirnment, to get high availability, we should have
-at least two instances for each control plane components (portal and
-monitor), and many instances for each data plane components (cn_agent
-and dn_agent). In this guide, we deploy two instances for each
-components. As a demo, we deploy all of them to a single server. In
-the next guide, we will deploy them to different servers.
+The VDA cluster could manager thousands of disk nodes and controller
+nodes. For testing purpose, we could put mutliple disk nodes and
+controller nodes to a signle server. This guide will show you how to
+manage mutliple disk nodes and controller nodes. All of the nodes and
+the controller plane components are in the same server. Below is the
+architecture:
 
 .. image:: /images/multiple_components_in_one_server.png
 
 Each cn_agent and dn_agent should have its own spdk application. We
-plan to deploy 2 cn_agent and 2 dn_agent, so we will launch 4 spdk
+will deploy 2 cn_agent and 2 dn_agent, so we will launch 4 spdk
 applications. All of the should listen on different port. We only have
-one database instance. Here we will use Postgresql as an example. It
-should be MySQL too. The HA of database is out of the scope of this
-document. You should follow the general HA solution(s) of the database
-you use.
+one database, one portal and one monitor. You could deply multiple
+portals and put them to a load balancer. And you could launch multiple
+monitors too.
 
-Here we use ubuntu20.04 as an example system. But they should be
-deployed to most of the linux distributions. The server should have at
-least 16G memory, and we will allocate 8G huge page for spdk
-applications.
+We deploy these components to a ubuntu20.04 server, but they should be
+deployed to most of the linux distributions. To deploy multiple spdk
+applications, the server should have at least 16G memory, and we will
+allocate 8G huge page for spdk applications.
 
-Install
--------
-
-make sure system is up to date
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: none
-
-   sudo apt update -y && sudo apt upgrade -y && sudo reboot
-
-install spdk
+Install spdk
 ^^^^^^^^^^^^
 Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
 
@@ -47,7 +36,7 @@ Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`
    ./configure
    make
 
-run spdk
+Run spdk
 ^^^^^^^^
 We will have 2 controller nodes and two disk nodes. So we will launch
 4 spdk applications. And we should disable auto examine on all of
@@ -66,6 +55,11 @@ Launch the dn_spdk_app_0
 .. code-block:: none
 
    sudo ./build/bin/spdk_tgt --rpc-socket /tmp/dn0.sock --wait-for-rpc > /tmp/dn0.log 2>&1 &
+
+Wait until the /tmp/dn0.sock is created, then run below commands:
+
+.. code-block:: none
+
    sudo ./scripts/rpc.py -s /tmp/dn0.sock bdev_set_options -d
    sudo ./scripts/rpc.py -s /tmp/dn0.sock framework_start_init
    sudo ./scripts/rpc.py -s /tmp/dn0.sock framework_wait_init
@@ -76,6 +70,10 @@ Launch the dn_spdk_app_1
 .. code-block:: none
 
    sudo ./build/bin/spdk_tgt --rpc-socket /tmp/dn1.sock --wait-for-rpc > /tmp/dn1.log 2>&1 &
+
+Wait until the /tmp/dn1.sock is created, then run below commands:
+.. code-block:: none
+
    sudo ./scripts/rpc.py -s /tmp/dn1.sock bdev_set_options -d
    sudo ./scripts/rpc.py -s /tmp/dn1.sock framework_start_init
    sudo ./scripts/rpc.py -s /tmp/dn1.sock framework_wait_init
@@ -86,6 +84,10 @@ Launch the cn_spdk_app_0
 .. code-block:: none
 
    sudo ./build/bin/spdk_tgt --rpc-socket /tmp/cn0.sock --wait-for-rpc > /tmp/cn0.log 2>&1 &
+
+Wait until the /tmp/cn0.sock is created, then run below commands:
+.. code-block:: none
+
    sudo ./scripts/rpc.py -s /tmp/cn0.sock bdev_set_options -d
    sudo ./scripts/rpc.py -s /tmp/cn0.sock framework_start_init
    sudo ./scripts/rpc.py -s /tmp/cn0.sock framework_wait_init
@@ -96,14 +98,18 @@ launch the cn_spdk_app_1
 .. code-block:: none
 
    sudo ./build/bin/spdk_tgt --rpc-socket /tmp/cn1.sock --wait-for-rpc > /tmp/cn1.log 2>&1 &
+
+Wait until the /tmp/cn1.sock is created, then run below commands:
+.. code-block:: none
+
    sudo ./scripts/rpc.py -s /tmp/cn1.sock bdev_set_options -d
    sudo ./scripts/rpc.py -s /tmp/cn1.sock framework_start_init
    sudo ./scripts/rpc.py -s /tmp/cn1.sock framework_wait_init
    sudo chmod 777 /tmp/cn1.sock
 
-install vda
+Install vda
 ^^^^^^^^^^^
-install venv, create a python virtual environment, install vda in this
+Install venv, create a python virtual environment, install vda in this
 environment.
 
 .. code-block:: none
@@ -122,90 +128,69 @@ into the vda_env:
 
    soruce vda_env/bin/activate
 
-install postgresql
-^^^^^^^^^^^^^^^^^^
-install the database, create db, user, and grant all permission to the
-user:
-
-.. code-block:: none
-
-   sudo apt install -y postgresql
-   sudo -u postgres psql
-   create database vda_db;
-   create user vda_user with encrypted password 'vda_password';
-   grant all privileges on database vda_db to vda_user;
-   exit
-
-To let vda communicate with postgresql, you need to install the db
-driver psycopg2. The psycopg2 is a python wrapper for libpq. Before
-install psycopg2, you need to install below packages on your system:
-
-.. code-block:: none
-
-   sudo apt install -y gcc
-   sudo apt install python3-dev
-   sudo apt install libpq-dev
-
-Then make sure the current terminal is in the vda_env virtual
-enviornment, and run:
-
-.. code-block:: none
-
-   pip install psycopg2
-
-init database
+Init database
 ^^^^^^^^^^^^^
 
 .. code-block:: none
 
-   vda_db --action create --db-uri postgresql://vda_user:vda_password@localhost:5432/vda_db
+   vda_db --action create --db-uri sqlite:////tmp/vda.db
 
-launch two portals
-^^^^^^^^^^^^^^^^^^
-
-.. code-block:: none
-
-   vda_portal --listener 127.0.0.1 --port 9520 --db-uri postgresql://vda_user:vda_password@localhost:5432/vda_db > /tmp/vda_portal_0.log 2>&1 &
-   vda_portal --listener 127.0.0.1 --port 9521 --db-uri postgresql://vda_user:vda_password@localhost:5432/vda_db > /tmp/vda_portal_1.log 2>&1 &
-
-launch two monitors
-^^^^^^^^^^^^^^^^^^^
+Launch portal
+^^^^^^^^^^^^^
 
 .. code-block:: none
 
-   vda_monitor --listener 127.0.0.1 --port 9620 --db-uri postgresql://vda_user:vda_password@localhost:5432/vda_db > /tmp/vda_monitor_0.log 2>&1 &
-   vda_monitor --listener 127.0.0.1 --port 9621 --db-uri postgresql://vda_user:vda_password@localhost:5432/vda_db > /tmp/vda_monitor_1.log 2>&1 &
+   nohup vda_portal --listener 127.0.0.1 --port 9520 --db-uri sqlite:////tmp/vda.db > /tmp/vda_portal_0.log 2>&1 &
 
-launch two dn_agents
+Launch monitor
+^^^^^^^^^^^^^^
+
+.. code-block:: none
+
+   nohup vda_monitor --listener 127.0.0.1 --port 9620 --db-uri sqlite:////tmp/vda.db > /tmp/vda_monitor_0.log 2>&1 &
+
+Launch two dn_agents
 ^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: none
 
-   vda_dn_agent --listener 127.0.0.1 --port 9720 --sock-path /tmp/dn0.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}' > /tmp/vda_dn_agent_0.log 2>&1 &
-   vda_dn_agent --listener 127.0.0.1 --port 9721 --sock-path /tmp/dn1.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4421"}' > /tmp/vda_dn_agent_1.log 2>&1 &
+   nohup vda_dn_agent --listener 127.0.0.1 --port 9720 --sock-path /tmp/dn0.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}' > /tmp/vda_dn_agent_0.log 2>&1 &
+   nohup vda_dn_agent --listener 127.0.0.1 --port 9721 --sock-path /tmp/dn1.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4421"}' > /tmp/vda_dn_agent_1.log 2>&1 &
 
-launch two cn_agents
+We launch two disk nodes on the same server, so we should let the two
+nodes listen on different ports. The dn0 listens on 9720 for the gRPC,
+and listens on 4420 for the TCP NVMeoF. The dn1 listens on 9721 for
+the gRPC, and listens on 4421 for the TCP NVMeoF.
+
+Launch two cn_agents
 ^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: none
 
-   vda_cn_agent --listener 127.0.0.1 --port 9820 --sock-path /tmp/cn0.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4430"}' > /tmp/vda_cn_agent_0.log 2>&1 &
-   vda_cn_agent --listener 127.0.0.1 --port 9821 --sock-path /tmp/cn1.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4431"}' > /tmp/vda_cn_agent_1.log 2>&1 &
+   nohup vda_cn_agent --listener 127.0.0.1 --port 9820 --sock-path /tmp/cn0.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4430"}' > /tmp/vda_cn_agent_0.log 2>&1 &
+   nohup vda_cn_agent --listener 127.0.0.1 --port 9821 --sock-path /tmp/cn1.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4431"}' > /tmp/vda_cn_agent_1.log 2>&1 &
 
-create several disk arrays
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-Before create any disk array, we should add the two controller nodes
-and the two disk ndoes to the system, and create physical disks on
-each disk node.
+Similar as disk nodes, the two controller nodes should listen on
+different ports. The cn0 listens on 9820 for the gRPC, and listens on
+4430 for the TCP NVMeoF. The cn1 listens on 9821 for the gRPC, and
+listens on 4431 for the TCP NVMeoF.
 
-create two disk nodes:
+Operate against the cluster
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Run below commands to add the two disk ndoes to the cluster:
 
 .. code-block:: none
 
-   vda_cli --addr-port 127.0.0.1:9520 dn create --dn-name localhost:9720 --dn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}'
-   vda_cli --addr-port 127.0.0.1:9520 dn create --dn-name localhost:9721 --dn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4421"}'
+   vda_cli --addr-port 127.0.0.1:9520 dn create --dn-name localhost:9720 --dn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}' --location localhost:9720
+   vda_cli --addr-port 127.0.0.1:9520 dn create --dn-name localhost:9721 --dn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4421"}' --location localhost:9721
 
-prepare 4 files, will use them as physical disks:
+The --location is a string, VDA will make sure a disk array allocate
+disks from different locations. We set different locations for the two
+disk nodes. When we create a disk array, then the physical disks
+of the disk array will be across different nodes.
+
+Create 4 files, we use them as physical disks:
 
 .. code-block:: none
 
@@ -224,12 +209,19 @@ disks:
    vda_cli --addr-port 127.0.0.1:9520 pd create --dn-name localhost:9721 --pd-name pd0 --pd-conf '{"type":"aio","filename":"/tmp/c.img"}'
    vda_cli --addr-port 127.0.0.1:9520 pd create --dn-name localhost:9721 --pd-name pd1 --pd-conf '{"type":"aio","filename":"/tmp/d.img"}'
 
+The physical disks in the same disk node should have different
+names. But they could have the same name if they are in different disk
+nodes.
+
 Create two controller nodes
 
 .. code-block:: none
 
-   vda_cli --addr-port 127.0.0.1:9520 cn create --cn-name localhost:9820 --cn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4430"}'
-   vda_cli --addr-port 127.0.0.1:9520 cn create --cn-name localhost:9821 --cn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4431"}'
+   vda_cli --addr-port 127.0.0.1:9520 cn create --cn-name localhost:9820 --cn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4430"}' --location localhost:9820
+   vda_cli --addr-port 127.0.0.1:9520 cn create --cn-name localhost:9821 --cn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4431"}' --location localhost:9821
+
+Similar as disk nodes, we set different locations for the two
+controller nodes.
 
 Create a disk array
 
@@ -237,45 +229,122 @@ Create a disk array
 
    vda_cli --addr-port 127.0.0.1:9520 da create --da-name da0 --cntlr-cnt 2 --da-size 33554432 --physical-size 33554432 --da-conf '{"stripe_count":2, "stripe_size_kb":64}'
 
+'--da-name da0' means the disk array name is da0, it should be a
+unique name in the cluster.
+
+'--cntlr-cnt 2' means the disk array da0 has two controllers.
+
+'stripe_count' is 2 means the raid0 of da0 has two legs.
+
 Export the disk array da0 to localhost
 
 .. code-block:: none
 
    vda_cli --addr-port 127.0.0.1:9520 exp create --da-name da0 --exp-name exp0 --initiator-nqn nqn.2016-06.io.spdk:host0
 
-Before connect the disk array to the current host, make sure the
-nvme-tcp module is loaded and the nvme-cli is installed:
+Get the exportor status:
+
+.. code-block:: none
+
+   vda_cli --addr-port 127.0.0.1:9520 exp get --da-name da0 --exp-name exp0
+
+The output should be similar as below:
+
+.. code-block:: none
+
+   {
+     "reply_info": {
+       "req_id": "1fef27c989854eb5afb1265454a1b0c2",
+       "reply_code": 0,
+       "reply_msg": "success"
+     },
+     "exp_msg": {
+       "exp_id": "fb210bb7b8434eba89cd11c4b66711af",
+       "exp_name": "exp0",
+       "exp_nqn": "nqn.2016-06.io.spdk:vda-exp-da0-exp0",
+       "da_name": "da0",
+       "initiator_nqn": "nqn.2016-06.io.spdk:host0",
+       "snap_name": "",
+       "es_msg_list": [
+         {
+           "es_id": "2e58f7cc7ad7488589f05c6645145b82",
+           "cntlr_idx": 0,
+           "cn_name": "localhost:9820",
+           "cn_listener_conf": "{\"trtype\":\"tcp\",\"traddr\":\"127.0.0.1\",\"adrfam\":\"ipv4\",\"trsvcid\":\"4430\"}",
+           "error": false,
+           "error_msg": ""
+         },
+         {
+           "es_id": "f2e97522364c4175900fba50fef80d80",
+           "cntlr_idx": 1,
+           "cn_name": "localhost:9821",
+           "cn_listener_conf": "{\"trtype\":\"tcp\",\"traddr\":\"127.0.0.1\",\"adrfam\":\"ipv4\",\"trsvcid\":\"4431\"}",
+           "error": false,
+           "error_msg": ""
+         }
+       ]
+     }
+   }
+
+
+We can find the connection information we need from the output. The
+"exp_nqn" is the NQN of the disk array. The es_msg_list has two items,
+they are the information of the two controllers. We need the two
+cn_listener_conf when we connect to the two controllers.
+
+Before connect to the disk array, make sure nvme-tcp module is loaded,
+nvme-cli and jq are inistalled:
 
 .. code-block:: none
 
    sudo modprobe nvme-tcp
    sudo apt install -y nvme-cli
+   sudo apt inistall -y jq
 
-Discover and connect the disk array, we have two controllers, we
-should discover and connect the two controllers separately.
-
-Discover and connect to the first controller:
+Connect to the two controllers:
 
 .. code-block:: none
 
-   sudo nvme discover -t tcp -a 127.0.0.1 -s 4430 --hostnqn nqn.2016-06.io.spdk:host0
    sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da0-exp0 -a 127.0.0.1 -s 4430 --hostnqn nqn.2016-06.io.spdk:host0
+   sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da0-exp0 -a 127.0.0.1 -s 4431 --hostnqn nqn.2016-06.io.spdk:host0
 
-Discover and connect to the second controller:
+Find the nvme devices of the two controllers:
 
 .. code-block:: none
 
-   sudo nvme discover -t tcp -a 127.0.0.1 -s 4431 --hostnqn nqn.2016-06.io.spdk:host0
-   sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da0-exp0 -a 127.0.0.1 -s 4431 --hostnqn nqn.2016-06.io.spdk:host0
-   
+   sudo nvme list-subsys -o json | jq '.Subsystems[] | select(.NQN=="nqn.2016-06.io.spdk:vda-exp-da0-exp0")'
 
-If you have no other nvme device, you can find nvme0 and nvme1 under
-the /dev directory. And you can find a /dev/nvme0n1, there is no
-/dev/nvme1n1. The /dev/nvme0n1 is a multipath device. If one
-controller doesn't work, the kernel driver will failover to another
-one automatically.
+The output should be something like below:
 
-clean up all resoruces
+.. code-block:: none
+
+   {
+     "Name": "nvme-subsys1",
+     "NQN": "nqn.2016-06.io.spdk:vda-exp-da0-exp0",
+     "Paths": [
+       {
+         "Name": "nvme1",
+         "Transport": "tcp",
+         "Address": "traddr=127.0.0.1 trsvcid=4430",
+         "State": "live"
+       },
+       {
+         "Name": "nvme2",
+         "Transport": "tcp",
+         "Address": "traddr=127.0.0.1 trsvcid=4431",
+         "State": "live"
+       }
+     ]
+   }
+
+
+If the "CONFIG_NVME_MULTIPATH" is enabled in the linux kernel, linux
+kernel will combine the two controllers to a single device. When you
+access /dev/nvme1n1 , the traffic  will be distributed to both nvme1
+and nvme2, and if one controller is failed, kernel will failover
+automatically.
+
+Clean up all resoruces
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Disconnect the disk array
@@ -283,6 +352,14 @@ Disconnect the disk array
 .. code-block:: none
 
    sudo nvme disconnect -n nqn.2016-06.io.spdk:vda-exp-da0-exp0
+
+The output should be something like below:
+
+.. code-block:: none
+
+   NQN:nqn.2016-06.io.spdk:vda-exp-da0-exp0 disconnected 2 controller(s)
+
+You can find it disconnected from 2 controllers.
 
 Delete the exporter
 
@@ -319,12 +396,6 @@ Delete the two disk nodes
    vda_cli --addr-port 127.0.0.1:9520 dn delete --dn-name localhost:9720
    vda_cli --addr-port 127.0.0.1:9520 dn delete --dn-name localhost:9721
 
-Drop the database
-
-.. code-block:: none
-
-   vda_db --action drop --db-uri postgresql://vda_user:vda_password@localhost:5432/vda_db
-
 Kill all processes
 
 .. code-block:: none
@@ -334,3 +405,9 @@ Kill all processes
    killall vda_dn_agent
    killall vda_cn_agent
    sudo killall reactor_0
+
+Drop the database
+
+.. code-block:: none
+
+   vda_db --action drop --db-uri sqlite:////tmp/vda.db

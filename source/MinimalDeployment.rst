@@ -16,9 +16,6 @@ distributions. In a production environment, the SPDK applications and
 the VDA related processes should run as daemons. But in this guide, we
 just use "nohup" command to keep them running.
 
-Install
--------
-
 Install spdk
 ^^^^^^^^^^^^
 Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
@@ -157,7 +154,6 @@ Operate against the cluster
 We have launched the dn_agent and cn_agent on the disk node and
 controller node (both of them are localhost). But the cluster doesn't
 record them to the database yet.
-
 
 Run below command to add a disk node to the cluster:
 
