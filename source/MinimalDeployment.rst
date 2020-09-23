@@ -176,7 +176,7 @@ Add the controller node to the cluster:
 
 In a production environment, we may add lots of disk nodes and
 contrtoller nodes. And we may have multiple physical disks in a single
-disk node. In this tutorial we only have one disk ndoe and one
+disk node. In this tutorial we only have one disk node and one
 controller node, and only one malloc disk in the disk node.
 
 Now we can create a disk array:
@@ -269,7 +269,7 @@ initiator nqn, or the disk array will reject the connection.
 
 Before let a host (initiator) connect to it, we need to know some
 basic information, such as the disk array NQN, and detail parameters
-about the NVMeoF protocal. We could use below command to get these
+about the NVMeOF protocol. We could use below command to get these
 information:
 
 .. code-block:: none
@@ -308,8 +308,8 @@ The output should be something like below:
 
 We can find the disk array nqn from the "exp_nqn" field, which is
 "nqn.2016-06.io.spdk:vda-exp-da0-exp0" in our example. We can find the
-NVMeoF information from the cn_listener_conf field. In our example, we
-know the protocal is tcp/ipv4, ip address is 127.0.0.1, port
+NVMeOF information from the cn_listener_conf field. In our example, we
+know the protocol is tcp/ipv4, ip address is 127.0.0.1, port
 is 4430. Then we could connect this disk array from the host.
 
 Before connect to the disk array, we should make sure the nvme-tcp

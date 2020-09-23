@@ -17,7 +17,7 @@ The grpc listen port. The default value is 9720.
 
 \--max-workers
 ^^^^^^^^^^^^^^
-It indicate how many concurrent workers the grpc server will have. The
+It indicates how many concurrent workers the grpc server will have. The
 default value is 10.
 
 \--sock-path
@@ -48,8 +48,9 @@ nvmf_subsystem_add_listener API of spdk.The default value is
 ^^^^^^^^^^^^^^
 A local file path to store the configuration data of this node. The
 VDA cluster sync up configuration data from the database to all the
-disk nodes and controller nodes. Each node only gets the configuration
-data related to itself. If set this parameter, this node will store
-the configuration data to a local file. When it restarted next time,
-it can read from the local file. Then it will be available before the
-configuratino data is sent from the database to it.
+disk nodes and controller nodes. Each node only gets its own
+configuration data. If this parameter is set, the node will store the
+configuration data to a local file. When it restarts, it can read the
+the configuration data from the local file. Then it will be available
+quickly.
+

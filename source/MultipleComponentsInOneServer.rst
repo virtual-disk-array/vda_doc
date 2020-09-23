@@ -2,9 +2,9 @@ Multiple Components In One Server
 =================================
 
 The VDA cluster could manager thousands of disk nodes and controller
-nodes. For testing purpose, we could put mutliple disk nodes and
-controller nodes to a signle server. This guide will show you how to
-manage mutliple disk nodes and controller nodes. All of the nodes and
+nodes. For testing purpose, we could put multiple disk nodes and
+controller nodes to a single server. This guide will show you how to
+manage multiple disk nodes and controller nodes. All of the nodes and
 the controller plane components are in the same server. Below is the
 architecture:
 
@@ -13,7 +13,7 @@ architecture:
 Each cn_agent and dn_agent should have its own spdk application. We
 will deploy 2 cn_agent and 2 dn_agent, so we will launch 4 spdk
 applications. All of the should listen on different port. We only have
-one database, one portal and one monitor. You could deply multiple
+one database, one portal and one monitor. You could deploy multiple
 portals and put them to a load balancer. And you could launch multiple
 monitors too.
 
@@ -40,7 +40,7 @@ Run spdk
 ^^^^^^^^
 We will have 2 controller nodes and two disk nodes. So we will launch
 4 spdk applications. And we should disable auto examine on all of
-them. Befor launch any spdk application, we should initialize the
+them. Before launch any spdk application, we should initialize the
 spdk environment. Please run below commands under the spdk directory:
 
 .. code-block:: none
@@ -159,8 +159,8 @@ Launch two dn_agents
 
 We launch two disk nodes on the same server, so we should let the two
 nodes listen on different ports. The dn0 listens on 9720 for the gRPC,
-and listens on 4420 for the TCP NVMeoF. The dn1 listens on 9721 for
-the gRPC, and listens on 4421 for the TCP NVMeoF.
+and listens on 4420 for the TCP NVMeOF. The dn1 listens on 9721 for
+the gRPC, and listens on 4421 for the TCP NVMeOF.
 
 Launch two cn_agents
 ^^^^^^^^^^^^^^^^^^^^
@@ -172,13 +172,13 @@ Launch two cn_agents
 
 Similar as disk nodes, the two controller nodes should listen on
 different ports. The cn0 listens on 9820 for the gRPC, and listens on
-4430 for the TCP NVMeoF. The cn1 listens on 9821 for the gRPC, and
-listens on 4431 for the TCP NVMeoF.
+4430 for the TCP NVMeOF. The cn1 listens on 9821 for the gRPC, and
+listens on 4431 for the TCP NVMeOF.
 
 Operate against the cluster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Run below commands to add the two disk ndoes to the cluster:
+Run below commands to add the two disk nodes to the cluster:
 
 .. code-block:: none
 
@@ -344,7 +344,7 @@ access /dev/nvme1n1 , the traffic will be distributed to both nvme1
 and nvme2, and if one controller is failed, kernel will failover
 automatically.
 
-Clean up all resoruces
+Clean up all resources
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Disconnect the disk array

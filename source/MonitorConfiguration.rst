@@ -17,7 +17,7 @@ The grpc listen port. The default value is 9620.
 
 \--max-workers
 ^^^^^^^^^^^^^^
-It indicate how many concurrent workers the grpc server will have. The
+It indicates how many concurrent workers the grpc server will have. The
 default value is 10.
 
 \--db-uri, \--db-uri-file, \--db-uri-stdin

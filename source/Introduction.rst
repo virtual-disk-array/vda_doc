@@ -4,7 +4,7 @@ Introduction
 Overview
 --------
 
-VDA (Virtual Disk Array) is the a distributed storage system. It uses
+VDA (Virtual Disk Array) is a distributed storage system. It uses
 `SPDK <https://spdk.io/>`_ as data plane. It could create and manage
 a set of virtual disk arrays. The virtual disk array looks like a
 traditional disk array, which has one or multiple controllers and
@@ -22,9 +22,9 @@ Components
 
 portal
 ^^^^^^
-The portal is a set of API servers. It is the interface for the VDA
-user. It accepts gRPC. The client use it to create/delete/manage the
-virtual disk arrays and other resources.
+The portal is a set of API servers. It is the user interface. It
+accepts gRPC. The client use it to create/delete/manage the virtual
+disk arrays and other resources.
 
 database
 ^^^^^^^^
@@ -36,12 +36,12 @@ monitor
 It syncs up data from database to all the disk node (dn) and controller
 node (cn), gets current status from disk node and controller node,
 and updates the status to the database. It also detects the failure of
-cnotroller node, and performs failovers.
+cnotroller node, and performs failover.
 
 Controller Node (cn)
 ^^^^^^^^^^^^^^^^^^^^
 The VDA allocates controllers from cn. One cn would have multiple
-controllers for differnt virtual disk arrays. Every CN should run two
+controllers for different virtual disk arrays. Every CN should run two
 softwares: spdk application and cn_agent.
 
 Disk Node (dn)
@@ -72,7 +72,7 @@ Below diagram shows the components of a single virtual disk array.
 
 Physical Disk (pd)
 ^^^^^^^^^^^^^^^^^^
-A pd is a bdev in the SPDK application. It indiciate a physical disk
+A pd is a bdev in the SPDK application. It indicates a physical disk
 provided by the dn. Each pd is also a `logical volume store <https://spdk.io/doc/logical_volumes.html#lvs>`_
 in spdk. The VDA cluster allocate disks for the virtual disk arrays
 from the logical volume store. Currently VDA supports 3 kind of pd,
@@ -86,7 +86,7 @@ Virtual Disk (vd)
 ^^^^^^^^^^^^^^^^^
 A vd is a `logical volume <https://spdk.io/doc/logical_volumes.html#lvol>`_
 allocated from pd. And it is exported as an NVMeOF target. It stores
-the actual data of the virtual disk arrays.
+the data of the virtual disk arrays.
 
 Controller (cntlr)
 ^^^^^^^^^^^^^^^^^^
@@ -98,14 +98,14 @@ host and other secondary cntlr(s).
 The secondary cntlr connects to the primary cntlr, and then exports it
 to the host. So from the host prespective, both primary and secondary
 are accessable. The multiple cntlrs of the virtual disk array are
-active/active mode. When the monitor find a cn doesn't work, it will
-perform failover for all the cntlrs in this cn.
-In the above diagram, cntlr0 is the primary cntlr, cntlr1 is the
+active/active mode. If a cn doesn't work, a monitor would find it, and
+the monitor  will perform ailover for all the cntlrs in this cn. In
+the above diagram, cntlr0 is the primary cntlr, cntlr1 is the
 secondary cntlr.
 
 Disk Array (da)
 ^^^^^^^^^^^^^^^
-The da is a virtual disk array. It provide multiple controllers and
+The da is a virtual disk array. It has multiple controllers and
 could be accessed by the NVMeOF protocal.
 
 Host

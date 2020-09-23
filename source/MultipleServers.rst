@@ -1,5 +1,5 @@
-Multiple Serviers Deployment
-============================
+Multiple Servers Deployment
+===========================
 
 In this tutorial, we deploy the vda cluster components to multiple
 servers. Below is the architecture:
@@ -11,13 +11,12 @@ client of the controller plane, 2 for the users of the data plane.
 
 The 3 controller plane servers:
 
-#. portal: Used for accept gRPC request. The portal is stateless, you
-   could deploy multiple portals and put a load balancer at the front
-   of them.
-#. monitor: Used for syncup the cluster metadata to the disk nodes and
+#. portal: Accept gRPC request. The portal is stateless, you could
+   deploy multiple portals and put a load balancer at the front of
+   them.
+#. monitor: Syncup the cluster metadata to the disk nodes and
    controller nodes. You could deploy multiple monitors and let each
-   monitor work on a subset of the disk nodes and controller
-   nodes.
+   monitor work on a subset of the disk nodes and controller nodes.
 #. postgresql: It is the database, in this tutorial, we will use
    postgresql as the database. MySQL should work well too.
 
@@ -32,12 +31,12 @@ array to a host and so on.
 
 The host0 and host1 are the consumers of the disk arrays. After
 vda_cli creates a disk array and exports to a host, the host could
-connect to that disk array over the NVMeoF.
+connect to that disk array over the NVMeOF.
 
-Similar as previous guides, in this tutorial, all of these servers are
-ubuntu20.04. They could be deployed to other linux distrubution too.
+Similar as previous guides, in this tutorial, all the servers are
+ubuntu20.04. They could be deployed to other linux distribution too.
 
-Below is the server ip addresses and the server name:
+Below are the server ip addresses and the server name:
 
 192.168.0.10 postgresql
 
@@ -518,7 +517,7 @@ Find the nvme device name from the NQN:
 
 We can find two devices (nvme0 and nvme1). If the
 "CONFIG_NVME_MULTIPATH" is enabled in the linux kernel, linux kernel
-will compbine them together and you only need to access
+will combine them together and you only need to access
 /dev/nvme0n1. E.g. you can get the device partition information:
 
 .. code-block:: none
@@ -533,7 +532,7 @@ will compbine them together and you only need to access
 
 Create another disk array on vda_cli
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Run below commans on vda_cli (192.168.0.13).
+Run below commands on vda_cli (192.168.0.13).
 
 Create da1
 
