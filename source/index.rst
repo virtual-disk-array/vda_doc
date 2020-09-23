@@ -13,6 +13,7 @@ Welcome to vda's documentation!
    Introduction
    GettingStarted
    Configuration
+   gRPCInterface
 
 
 Indices and tables

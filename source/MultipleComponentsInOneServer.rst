@@ -340,7 +340,7 @@ The output should be something like below:
 
 If the "CONFIG_NVME_MULTIPATH" is enabled in the linux kernel, linux
 kernel will combine the two controllers to a single device. When you
-access /dev/nvme1n1 , the traffic  will be distributed to both nvme1
+access /dev/nvme1n1 , the traffic will be distributed to both nvme1
 and nvme2, and if one controller is failed, kernel will failover
 automatically.
 

@@ -45,7 +45,7 @@ Below is the server ip addresses and the server name:
 
 192.168.0.12 monitor
 
-192.168.0.13 cli
+192.168.0.13 vda_cli
 
 192.168.0.14 dn0
 
@@ -61,6 +61,8 @@ Below is the server ip addresses and the server name:
 
 Install and configure postgresql
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Login to the postgresql server (192.168.0.10).
+
 Install postgresql from the default software repository, create user,
 password and database.
 
@@ -125,6 +127,8 @@ Then restart the postgresql:
 
 Configure portal
 ^^^^^^^^^^^^^^^^
+Login to portal (192.168.0.11).
+
 Install vda package:
 
 .. code-block:: none
@@ -159,6 +163,8 @@ Launch the portal process
 
 Configure monitor
 ^^^^^^^^^^^^^^^^^
+Login to monitor (192.168.0.12).
+
 Install vda package:
 
 Install vda package:
@@ -188,6 +194,8 @@ Launch the monitor process:
 
 Configure dn0
 ^^^^^^^^^^^^^
+Login to dn0 (192.168.0.14).
+
 Install spdk and init the spdk environment
 
 .. code-block:: none
@@ -235,6 +243,8 @@ Launch dn_agent
 
 Configure dn1
 ^^^^^^^^^^^^^
+Login to dn1 (192.168.0.15).
+
 Install spdk and init the spdk environment
 
 .. code-block:: none
@@ -282,6 +292,8 @@ Launch dn_agent
 
 Configure cn0
 ^^^^^^^^^^^^^
+Login to cn0 (192.168.0.16).
+
 Install spdk and init the spdk environment
 
 .. code-block:: none
@@ -329,6 +341,8 @@ Launch cn_agent
 
 Configure cn1
 ^^^^^^^^^^^^^
+Login to cn1 (192.168.0.17).
+
 Install spdk and init the spdk environment
 
 .. code-block:: none
@@ -376,6 +390,9 @@ Launch cn_agent
 
 Configure vda_cli
 ^^^^^^^^^^^^^^^^^
+Login to vda_cli (192.168.0.13).
+
+Install the vda package.
 
 .. code-block:: none
 
@@ -385,8 +402,10 @@ Configure vda_cli
    source vda_env/bin/activate
    pip install vda
 
-Invoke VDA gRPC on vda_cli
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Invoke VDA gRPCs on vda_cli
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Run below commands on vda_cli (192.168.0.13).
+
 Add two dn nodes and create a malloc pd for each dn:
 
 .. code-block:: none
@@ -456,6 +475,8 @@ Get the connection information
 
 Connect the da0 on host0
 ^^^^^^^^^^^^^^^^^^^^^^^^
+Login to host0 (192.168.0.18).
+
 Load nvme-tcp module, install nvme-cli and jq
 
 .. code-block:: none
@@ -471,7 +492,7 @@ Connect to the two controller:
    sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da0-exp0 -a 192.168.0.16 -s 4430 --hostnqn nqn.2016-06.io.spdk:host0
    sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da0-exp0 -a 192.168.0.17 -s 4430 --hostnqn nqn.2016-06.io.spdk:host0
 
-Find the nvme device name from the NQN
+Find the nvme device name from the NQN:
 
 .. code-block:: none
 
@@ -495,7 +516,10 @@ Find the nvme device name from the NQN
      ]
    }
 
-Access the device
+We can find two devices (nvme0 and nvme1). If the
+"CONFIG_NVME_MULTIPATH" is enabled in the linux kernel, linux kernel
+will compbine them together and you only need to access
+/dev/nvme0n1. E.g. you can get the device partition information:
 
 .. code-block:: none
 
@@ -509,6 +533,8 @@ Access the device
 
 Create another disk array on vda_cli
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Run below commans on vda_cli (192.168.0.13).
+
 Create da1
 
 .. code-block:: none
@@ -562,6 +588,8 @@ Get the connection information:
 
 Connect the da1 on host1
 ^^^^^^^^^^^^^^^^^^^^^^^^
+Login to host1 (192.168.0.19).
+
 Load nvme-tcp module, install nvme-cli and jq
 
 .. code-block:: none
@@ -601,7 +629,8 @@ Find the device name from NQN:
      ]
    }
 
-Access the device:
+
+Similar as host0, we could access /dev/nvme0n1:
 
 .. code-block:: none
 

@@ -56,4 +56,14 @@ directly.
 \--total, \--current
 ^^^^^^^^^^^^^^^^^^^^
 The parameter 'total' means how many monitors totally, 'current' means
-the index of this monitor.
+the index of this monitor. These two parameters are used to distribute
+workload to multiple monitors. E.g.
+
+- There is only one monitor and set "--total 1 --current 0". This
+  monitor will work for the whole cluster.
+- There are two monitors, set "--total 2 --current 0" for monitor0,
+  set "--total 2 --current 1" for monitor1. Then both monitor0 and
+  monitor1 will work on half of the cluster.
+- There are two monitors, set "--total 1 --current 0" for both of
+  monitor0 and monitor1. Both of the two monitors will work on the
+  whole cluster. They could be backup for each other.
