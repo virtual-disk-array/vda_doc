@@ -52,15 +52,15 @@ application and dn_agent.
 
 cn_agent
 ^^^^^^^^
-The cn_agent runs on cn. It accepts rpc from portal and monitor, sends
-API to spdk application, creates/deletes resources for the controllers
-of the virtual disk arrays.
+The cn_agent runs on the Controller Node (cn). It accepts rpc from
+portal and monitor, sends API to spdk application, creates/deletes
+resources for the controllers of the virtual disk arrays.
 
 dn_agent
 ^^^^^^^^
-The dn_agent runs on cn. It accepts rpc from portal and monitor, sends
-API to spdk application, creates/deletes resources for the disks of
-the virtual disk array.
+The dn_agent runs on the Disk Node (dn). It accepts rpc from portal
+and monitor, sends API to spdk application, creates/deletes resources
+for the disks of the virtual disk array.
 
 View from the data plane
 ------------------------
