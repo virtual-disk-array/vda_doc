@@ -4,16 +4,16 @@ Introduction
 Overview
 --------
 
-VDA (Virtual Disk Array) is a distributed storage system. It uses
-`SPDK <https://spdk.io/>`_ as data plane. It could create and manage
-a set of virtual disk arrays. The virtual disk array looks like a
-traditional disk array, which has one or multiple controllers and
-several disks. The user can set raid level, encryption or other
-features on the controller (currently, only raid0 is supported). In
-VDA, all the controllers and disks are SPDK applications. They are
-connected by NVMeOF. The virtual disk array could be used as
-persistent volumes of kubernets or openstack cinder backend
-driver. Below is the architecture of VDA:
+`VDA <https://github.com/virtual-disk-array/vda>`_ (Virtual Disk Array)
+is a distributed storage system. It uses `SPDK <https://spdk.io/>`_ as
+data plane. It could create and manage a set of virtual disk
+arrays. The virtual disk array looks like a traditional disk array,
+which has one or multiple controllers and several disks. The user can
+set raid level, encryption or other features on the controller
+(currently, only raid0 is supported). In VDA, all the controllers and
+disks are SPDK applications. They are connected by NVMeOF. The virtual
+disk array could be used as persistent volumes of kubernets or
+openstack cinder backend driver. Below is the architecture of VDA:
 
 .. image:: /images/vda_cluster_arch.png
 
