@@ -1,433 +1,328 @@
 Minimal Deployment
 ==================
 
-In this guide, we deploy all VDA components to a single service, and
-describe the basic usage of it. Below is the components we will deploy:
+In this guide, we deploy all VDA components to a single server, and
+explain the basic usage of it. Below are the components we will deploy:
 
 .. image:: /images/minimal_deployment.png
 
-The vda_cli, portal, monitor, cn_agent, dn_agent are belongs to the
-VDA package. The sqlite is the database we will use. Most of linux
-distributions install it by default. The cn_spdk_app and dn_spdk_app
-are SPDK applications. In this tutorial, we use the buildin
-application spdk_tgt. All of them are deployed in a ubuntu 20.04
-server. But they should be deployed to most of the linux
-distributions. In a production environment, the SPDK applications and
-the VDA related processes should run as daemons. But in this guide, we
-just use "nohup" command to keep them running.
+Create a work directory
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Here we create a directory. We will store all the data (e.g. sockets,
+logs, etcd data) to this directory. ::
+
+  mkdir -p /tmp/vda_data
+
+Install and launch etcd
+^^^^^^^^^^^^^^^^^^^^^^^
+Follow the `install guide <https://etcd.io/docs/v3.4/install/>`_ to
+install the etcd. ::
+
+  cd ~
+  curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.4.16/etcd-v3.4.16-linux-amd64.tar.gz
+  tar xvf etcd-v3.4.16-linux-amd64.tar.gz
+
+Go to the etcd directory and run below command::
+
+  cd etcd-v3.4.16-linux-amd64
+  ./etcd --listen-client-urls http://localhost:2389 \
+  --advertise-client-urls http://localhost:2389 \
+  --listen-peer-urls http://localhost:2390 \
+  --name etcd0 --data-dir /tmp/vda_data/etcd0.data \
+  > /tmp/vda_data/etcd0.log 2>&1 &
+
+Here we don't use the default etcd port nubmers. Letter we will let
+the VDA control plane components (:ref:`portal <portal-label>` and
+:ref:`monitor <monitor-label>`) connect to the etcd 2398 port.
 
 Install spdk
 ^^^^^^^^^^^^
 Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
+::
 
-.. code-block:: none
-
-   cd ~
-   git clone https://github.com/spdk/spdk
-   cd spdk
-   git submodule update --init
-   sudo scripts/pkgdep.sh
-   ./configure
-   make
-
-Run spdk
-^^^^^^^^
-In this tutorial, we plan to run one controller node and one disk
-node. Each node should have its own spdk application. So we will
-launch two spdk applications.
-Before launch the spdk application, we need to initialize the spdk
-environment, we could run below script in the spdk directory.
-
-.. code-block:: none
-
-   sudo scripts/setup.sh
-
-When run the spdk application, we should disable auto examine, so we
-should use the --wait-for-rpc parameter, and invoke an API to disable
-auto examine. We set the socket path to  /tmp/dn0.sock, later we will
-pass this path to the dn_agent, then the dn_agent could communicate
-with this spdk application.
-
-.. code-block:: none
-
-   nohup sudo ./build/bin/spdk_tgt --rpc-socket /tmp/dn.sock --wait-for-rpc > /tmp/dn.log 2>&1 &
-
-We run below command to disable auto examine:
-
-.. code-block:: none
-
-   sudo ./scripts/rpc.py -s /tmp/dn.sock bdev_set_options -d
-
-Then let the spdk application go to the normal mode:
-
-.. code-block:: none
-
-   sudo ./scripts/rpc.py -s /tmp/dn.sock framework_start_init
-   sudo ./scripts/rpc.py -s /tmp/dn.sock framework_wait_init
-
-Change the permission of /tmp/dn.sock, then dn_agent could access it
-without root permission.
-
-.. code-block:: none
-
-   sudo chmod 777 /tmp/dn.sock
-
-We do the similar things for the controller node spdk application.
-
-Run the spdk application:
-
-.. code-block:: none
-
-   nohup sudo ./build/bin/spdk_tgt --rpc-socket /tmp/cn.sock --wait-for-rpc > /tmp/cn.log 2>&1 &
-
-Wait until the spdk application is ready for accepting RPCs, then run
-below commands:
-
-.. code-block:: none
-
-   sudo ./scripts/rpc.py -s /tmp/cn.sock bdev_set_options -d
-   sudo ./scripts/rpc.py -s /tmp/cn.sock framework_start_init
-   sudo ./scripts/rpc.py -s /tmp/cn.sock framework_wait_init
-   sudo chmod 777 /tmp/cn.sock
+  cd ~
+  git clone https://github.com/spdk/spdk
+  cd spdk
+  git submodule update --init
+  sudo scripts/pkgdep.sh
+  ./configure
+  make
 
 Install vda
 ^^^^^^^^^^^
-install venv, create a python virtual environment, install vda in this
-environment.
+Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+Download and unzip the package.
 
-.. code-block:: none
+Launch DN components
+^^^^^^^^^^^^^^^^^^^^
+For each :ref:`DN <dn-label>`, we should run a spdk application and the dn_agent. First,
+go to the spdk directory and run below commands::
 
-   cd ~
-   sudo apt install -y python3-venv
-   python3 -m venv vda_env
-   source vda_env/bin/activate
-   pip install vda
+  sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
+  sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
+  sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
+  sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
+  sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
+  sudo chmod 777 /tmp/vda_data/dn.sock
 
-All of below commands should be invoked under the vda_env. If you run
-below commands in a new terminal, make sure run below command to come
-into the vda_env:
+We don't launch the spdk app spdk_tgt directly. We use the
+``--wait-for-rpc`` option to let it stay in the init stage. Then
+invoke the ``bdev_set_options`` to disable the auto examine. It is
+required by the VDA. Some bdevs will be exported to :ref:`CN <cn-label>`.
+So they shouldn't be examined by :ref:`DN <dn-label>`. The
+``nvmf_set_crdt`` is not requried by :ref:`DN <dn-label>`, it is
+required by `CN <cn-label>`. Here we invoke ``nvmf_set_crdt`` to keep
+the DN and CN the same.
 
-.. code-block:: none
+Then go to the vda directory and run below commands::
 
-   soruce vda_env/bin/activate
+  ./vda_dn_agent --network tcp --address '127.0.0.1:9720' \
+  --sock-path /tmp/vda_data/dn.sock --sock-timeout 10 \
+  --lis-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}' \
+  --tr-conf '{"trtype":"TCP"}' \
+  > /tmp/vda_data/dn_agent.log 2>&1 &
 
-Init database
-^^^^^^^^^^^^^
+The ``--lis-conf`` and ``--tr-conf`` are json strings. The values in
+``--lis-conf`` will be passed to the SPDK ``nvmf_subsystem_add_listener``
+RPC. The values in ``tr-conf`` will be passed to the SPDK
+``nvmf_create_transport`` RPC. They are used to configure the NVMeOF
+connection between :ref:`VD <vd-label>` and :ref:`cntlr <cntlr-label>`.
+You can specific any values the SPDK RPCs accepts.
 
-.. code-block:: none
+You can check the /tmp/vda_data/dn_agent.log, if everything is OK, you
+can find below log::
 
-   vda_db --action create --db-uri sqlite:////tmp/vda.db
+  Launch dn agent server
+
+Launch CN components
+^^^^^^^^^^^^^^^^^^^^
+For each :ref:`CN <cn-label>`, we should run a spdk applicaiton and the cn-agent. First,
+go to the spdk directory and run below commands::
+
+  sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn.sock --wait-for-rpc > /tmp/vda_data/cn.log 2>&1 &
+  sudo scripts/rpc.py -s /tmp/vda_data/cn.sock bdev_set_options -d
+  sudo scripts/rpc.py -s /tmp/vda_data/cn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
+  sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_start_init
+  sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_wait_init
+  sudo chmod 777 /tmp/vda_data/cn.sock
+
+Similar as DN, we invoke ``bdev_set_options`` to disable auto examine,
+and we invoke ``nvmf_set_crdt`` to provide the delay time. The
+``nvmf_set_crdt`` is requried. If we don't set it, the :ref:`cntlr <cntlr-label>`
+failover may have problem.
+
+Then go to the vda directory and run below commands::
+
+  ./vda_cn_agent --network tcp --address '127.0.0.1:9820' \
+  --sock-path /tmp/vda_data/cn.sock --sock-timeout 10 \
+  --lis-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4430"}' \
+  --tr-conf '{"trtype":"TCP"}' \
+  > /tmp/vda_data/cn_agent.log 2>&1 &
+
+Similiar as DN, the ``lis-conf`` and ``--tr-conf`` are json
+strings. And  the are used by the SPDK ``nvmf_subsystem_add_listener``
+and ``nvmf_create_transport`` RPCs. They are used to configure the
+NVMeOF connection between :ref:`cntlr <cntlr-label>` and
+:ref:`host <host-label>`.
+
+You can check the /tmp/vda_data/cn_agent.log, if everything is OK, you
+can find below log::
+
+  Launch cn agent server
 
 Launch portal
 ^^^^^^^^^^^^^
+Run below command::
 
-.. code-block:: none
+  ./vda_portal --portal-address '127.0.0.1:9520' --portal-network tcp \
+  --etcd-endpoints localhost:2389 \
+  > /tmp/vda_data/portal.log 2>&1 &
 
-   nohup vda_portal --listener 127.0.0.1 --port 9520 --db-uri sqlite:////tmp/vda.db > /tmp/vda_portal.log 2>&1 &
+We let the :ref:`portal <portal-label>` listen on the tcp 9520
+port. The client should send VDA API to this port. The portal is a
+stateless server, you can put mutiple portals to a load balancer.
 
+You can check the /tmp/vda_data/portal.log, if everything is OK, you
+can find below log::
+
+  Launch portal server
 
 Launch monitor
 ^^^^^^^^^^^^^^
+Run below command::
 
-.. code-block:: none
+  ./vda_monitor --etcd-endpoints localhost:2389 \
+  > /tmp/vda_data/monitor.log 2>&1 &
 
-   nohup vda_monitor --listener 127.0.0.1 --port 9620 --db-uri sqlite:////tmp/vda.db > /tmp/vda_monitor.log 2>&1 &
+By default, the monitor will send heartbeat to each CN and DN for
+every 5 seconds. You can find such log message in
+/tmp/vda_data/monitor.log. You can launch multiple monitors, they will
+use etcd as a coordinator to split their tasks.
 
-Launch dn_agent
-^^^^^^^^^^^^^^^
+Create DN
+^^^^^^^^^
+We have launched the dn_agent, but we don't store them to the etcd
+yet. So the VDA cluster doeosn't know them. We run below command to
+create a :ref:`DN <dn-label>` in the VDA cluster::
 
-.. code-block:: none
+  ./vda_cli dn create --sock-addr localhost:9720 --tr-svc-id 4420
 
-   nohup vda_dn_agent --listener 127.0.0.1 --port 9720 --sock-path /tmp/dn.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}' > /tmp/vda_dn_agent.log 2>&1 &
+Create PD
+^^^^^^^^^
+In this guide, we create a 256M malloc :ref:`PD <pd-label>` for demo::
+
+  ./vda_cli pd create --sock-addr localhost:9720 --pd-name pd0 \
+  --bdev-type-key malloc --bdev-type-value 256
+
+Create CN
+^^^^^^^^^
+Similar as :ref:`DN <dn-label>`, we have launched the cn_agent, but
+the VDA cluster doesn't know it yet. We run below command to create a
+:ref:`CN <cn-label>` in the VDA cluster::
+
+  ./vda_cli cn create --sock-addr localhost:9820 --tr-svc-id 4430
+
+Create DA
+^^^^^^^^^
+We have create a :ref:`DN <dn-label>`, a :ref:`CN <cn-label>` and a
+:ref:`PD <pd-label>` in the :ref:`DN <dn-label>`. Now we can create a
+:ref:`DA <da-label>`. The :ref:`DA <da-label>` will allocate a
+:ref:`VD <vd-label` from the `PD <pd-label>`, and allocate a
+:ref:`cntlr <cntlr-label>` from the :ref:`CN <cn-label>`::
+
+  ./vda_cli da create --da-name da0 --size-mb 64 --physical-size-mb 64 \
+  --cntlr-cnt 1 --strip-cnt 1 --strip-size-kb 64
+
+--da-name
+  A unique name of the DA.
+--size-mb
+  The size in MegaByte of the DA
+--physical-size-mb
+  The sum of disk size allocated from all DNs. Currently please alwasy
+  set it to the same value as "--size-mb". In the further, the VDA
+  would support snapshot, the "\-\-physical-size-mb" and "\-\-size-mb"
+  would be different at that time.
+--cntlr-cnt
+  How many :ref:`cntlr <cntlr-label>` the DA will have. We only
+  created a single :ref:`CN <cn-label>`, so we can only allocate one
+  cntlr.
+--strip-cnt
+  The raid0 strip count. If we set it to a value larger than 1, the
+  VDA cluster will allocate :ref:`VD <vd-label>` from multiple
+  :ref:`DN <dn-label>`. In our demo, we only have a single DN, so we
+  can only set it to 1.
+--strip-size-kb
+  The strip size of raid0
+
+If everything is OK, we would get below response::
+
+  FIXME
+
+Please note: the ``"reply_code": 0`` means the DA information has been
+stored to the etcd cluster. It doesn't mean the DA has been created
+successfully. To check whether the DA is created successfully, please
+refer the following section.
+
+Get DA status
+^^^^^^^^^^^^^
+Run below command to get the DA status::
+
+  ./vda_cli da get --da-name da0
+
+If everything is OK, we would get below response::
+
+  FIXME
+
+(FIXME: explain the result and make sure the DA has no error)
+
+Create an EXP
+^^^^^^^^^^^^^
+Run below command to create an :ref:`EXP <exp-label>`::
+
+  ./vda_cli exp create --da-name da0 --exp-name exp0a \
+  --initiator-nqn nqn.2016-06.io.spdk:host0
+
+--da-name
+  The DA name
+--exp-name
+  The EXP name, it should be uniqu across the DA
+--initiator-nqn
+  The nqn of the host. The EXP will only allow this nqn connect to it.
+
+If everything is OK, we would get below response::
+
+  FIXME
+
+Please note; the ``"reply_code": 0`` measn the EXP information has
+been stored to the etcd cluster. It doesn't mean the EXP has been
+created successfully. To check whether the EXP is created
+successfully, please refer the following section.
+
+Get EXP status
+^^^^^^^^^^^^^^
+Run below command to get the :ref:`EXP <exp-label>` status::
+
+  ./vda_cli exp get --da-name da0 --exp-name exp0a
+
+Below is the result::
+
+  FIXME
 
 
-Launch cn_agent
-^^^^^^^^^^^^^^^
+Connect to the DA/EXP
+^^^^^^^^^^^^^^^^^^^^^
+Install the nvme-tcp kernel module::
 
-.. code-block:: none
+  sudo modprobe nvme-tcp
 
-   nohup vda_cn_agent --listener 127.0.0.1 --port 9820 --sock-path /tmp/cn.sock --listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4430"}' > /tmp/vda_cn_agent.log 2>&1 &
+Install the nvme-cli. E.g. you may run below command in a ubuntu system::
 
-Operate against the cluster
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  sudo apt install -y nvme-cli
 
-We have launched the dn_agent and cn_agent on the disk node and
-controller node (both of them are localhost). But the cluster doesn't
-record them to the database yet.
+Connect to the DA/EXP::
 
-Run below command to add a disk node to the cluster:
+  sudo nvme connect -t tcp -n nqn.2016-06.io.vda:exp-da0-exp0a -a 127.0.0.1 -s 4430 --hostnqn nqn.2016-06.io.spdk:host0
 
-.. code-block:: none
+The disk path would be ``/dev/disk/by-id/nvme-VDA_CONTROLLER_c5e94c313982b7e362dd``.
+You can use it as a normal disk on the host, e.g.::
 
-    vda_cli --addr-port 127.0.0.1:9520 dn create --dn-name localhost:9720 --dn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}'
+  sudo parted /dev/disk/by-id/nvme-VDA_CONTROLLER_c5e94c313982b7e362dd print
 
-Now we add a physical disk to the disk node. For testing purpose, we
-create a malloc disk:
-
-.. code-block:: none
-
-   vda_cli --addr-port 127.0.0.1:9520 pd create --dn-name localhost:9720 --pd-name pd0 --pd-conf '{"type":"malloc","size":67108864}'
-
-Add the controller node to the cluster:
-
-.. code-block:: none
-
-   vda_cli --addr-port 127.0.0.1:9520 cn create --cn-name localhost:9820 --cn-listener-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4430"}'
-
-In a production environment, we may add lots of disk nodes and
-contrtoller nodes. And we may have multiple physical disks in a single
-disk node. In this tutorial we only have one disk node and one
-controller node, and only one malloc disk in the disk node.
-
-Now we can create a disk array:
-
-.. code-block:: none
-
-   vda_cli --addr-port 127.0.0.1:9520 da create --da-name da0 --cntlr-cnt 1 --da-size 33554432 --physical-size 33554432 --da-conf '{"stripe_count":1, "stripe_size_kb":64}'
-
-The --da-name is the name of the disk array. We will use 'da0' to
-refer the disk array. --cntlr-cnt means how many controller it will
-have. We only have one controller node, we can not allocate more than
-one controller for each disk array. --da-size is the size of the disk
-array wil present to the user, --physical-size is the actual disk size
-allocated from the disk node(s). Current VDA doesn't support extending
-the physical size. So you should always set the --da-size
-and --physical-size to the same value. --da-conf is the configuration
-of the disk array. Current VDA only supports raid0. The parameter
-stripe_count means how many legs the raid0 device has, stripe_size_kb
-means the stripe size in KB of the raid0 device.
-
-After creating the da0, we could gets its information:
-
-.. code-block:: none
-
-   vda_cli --addr-port 127.0.0.1:9520 da get --da-name da0
-
-The output should be something like below:
-
-.. code-block:: none
-
-   {
-     "reply_info": {
-       "req_id": "8e6ad92b082b4eceb3f13a522cbdd727",
-       "reply_code": 0,
-       "reply_msg": "success"
-     },
-     "da_msg": {
-       "da_id": "e4f401c2890c4eb8b8f12bf8ea72b9d8",
-       "da_name": "da0",
-       "cntlr_cnt": 1,
-       "da_size": 33554432,
-       "da_conf": "{\"stripe_count\":1, \"stripe_size_kb\":64}",
-       "da_details": "{\"lvs_conf\": {\"uuid\": \"ee843399-9888-4f65-a722-bbc708cf5984\", \"name\": \"vda-005-e4f401c2890c4eb8b8f12bf8ea72b9d8\", \"base_bdev\": \"vda-004-e4f401c2890c4eb8b8f12bf8ea72b9d8\", \"total_data_clusters\": 7, \"free_clusters\": 7, \"block_size\": 4096, \"cluster_size\": 4194304}}",
-       "hash_code": 27012,
-       "error": false
-     },
-     "grp_msg_list": [
-       {
-         "grp_id": "97a5f2d5b4984601833296255094e00b",
-         "da_name": "da0",
-         "grp_idx": 0,
-         "grp_size": 33554432,
-         "vd_msg_list": [
-           {
-             "vd_id": "5c50ec79a3e8453699f757b675132933",
-             "da_name": "da0",
-             "grp_idx": 0,
-             "vd_idx": 0,
-             "dn_name": "localhost:9720",
-             "pd_name": "pd0",
-             "vd_size": 33554432
-           }
-         ]
-       }
-     ],
-     "cntlr_msg_list": [
-       {
-         "cntlr_id": "fab50f49958a4534828f6cf641c76ea3",
-         "da_name": "da0",
-         "cntlr_idx": 0,
-         "cn_name": "localhost:9820",
-         "primary": true,
-         "error": false,
-         "error_msg": ""
-       }
-     ]
-   }
-
-Export the disk array to localhost
-
-.. code-block:: none
-
-   vda_cli --addr-port 127.0.0.1:9520 exp create --da-name da0 --exp-name exp0 --initiator-nqn nqn.2016-06.io.spdk:host0
-
-When we export the disk array, we give a --exp-name, the disk array
-NQN will be generated from the da name and the exp
-name. The --initiator-nqn is the NQN of the initiator, when the
-initiator connect to this disk array, it should provide correct
-initiator nqn, or the disk array will reject the connection.
-
-Before let a host (initiator) connect to it, we need to know some
-basic information, such as the disk array NQN, and detail parameters
-about the NVMeOF protocol. We could use below command to get these
-information:
-
-.. code-block:: none
-
-   vda_cli --addr-port 127.0.0.1:9520 exp get --da-name da0 --exp-name exp0
-
-The output should be something like below:
-
-.. code-block:: none
-
-   {
-     "reply_info": {
-       "req_id": "c6d5f10f2d3d4e9a9950313f909564a0",
-       "reply_code": 0,
-       "reply_msg": "success"
-     },
-     "exp_msg": {
-       "exp_id": "5192e1f1cd154fbc92ebfb0743f5389e",
-       "exp_name": "exp0",
-       "exp_nqn": "nqn.2016-06.io.spdk:vda-exp-da0-exp0",
-       "da_name": "da0",
-       "initiator_nqn": "nqn.2016-06.io.spdk:host0",
-       "snap_name": "",
-       "es_msg_list": [
-         {
-           "es_id": "c99254393a4643d9b3da68cd78810d5c",
-           "cntlr_idx": 0,
-           "cn_name": "localhost:9820",
-           "cn_listener_conf": "{\"trtype\":\"tcp\",\"traddr\":\"127.0.0.1\",\"adrfam\":\"ipv4\",\"trsvcid\":\"4430\"}",
-           "error": false,
-           "error_msg": ""
-         }
-       ]
-     }
-   }
-
-We can find the disk array nqn from the "exp_nqn" field, which is
-"nqn.2016-06.io.spdk:vda-exp-da0-exp0" in our example. We can find the
-NVMeOF information from the cn_listener_conf field. In our example, we
-know the protocol is tcp/ipv4, ip address is 127.0.0.1, port
-is 4430. Then we could connect this disk array from the host.
-
-Before connect to the disk array, we should make sure the nvme-tcp
-kernel module is loaded and the nvme-cli is installed. Additinally, we
-use the 'jq' command to extract the nvme information, so make sure it
-is installed in the host too. Please run below commands:
-
-.. code-block:: none
-
-   sudo modprobe nvme-tcp
-   sudo apt install -y nvme-cli
-   sudo apt install jq
-
-Connect to the disk array
-
-.. code-block:: none
-
-   sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da0-exp0 -a 127.0.0.1 -s 4430 --hostnqn nqn.2016-06.io.spdk:host0
-
-Then you can find the nvme device in /dev/nvme* . If you have multiple
-nvme devices, you may use the "nvme list-subsys" command to find the
-nqn of the disk array, then you can know which device is the disk
-array we are connecting to. You may run below command:
-
-.. code-block:: none
-
-   sudo nvme list-subsys -o json | jq '.Subsystems[] | select(.NQN=="nqn.2016-06.io.spdk:vda-exp-da0-exp0")'
-
-The output should be:
-
-.. code-block:: none
-
-   {
-     "Name": "nvme-subsys0",
-     "NQN": "nqn.2016-06.io.spdk:vda-exp-da0-exp0",
-     "Paths": [
-       {
-         "Name": "nvme0",
-         "Transport": "tcp",
-         "Address": "traddr=127.0.0.1 trsvcid=4430",
-         "State": "live"
-       }
-     ]
-   }
-
-From the output, we know the subsystem name is nvme0. In VDA, the
-subsystem of the disk array will only have one name space. If the name
-is nvme0, we can find the device in /dev/nvme0n1
-
-We could try to access it:
-
-.. code-block:: none
-
-   sudo parted -s /dev/nvme0n1 print
-
-The output should be:
-
-.. code-block:: none
-
-   Error: /dev/nvme0n1: unrecognised disk label
-   Model: VDA_CONTROLLER (nvme)
-   Disk /dev/nvme0n1: 33.6MB
-   Sector size (logical/physical): 4096B/4096B
-   Partition Table: unknown
-   Disk Flags:
-
-clean up all resoruces
+Clean up all resources
 ^^^^^^^^^^^^^^^^^^^^^^
+* Disconnect from the host::
 
-Disconnect the disk array from host
+    sudo nvme disconnect -n nqn.2016-06.io.vda:exp-da0-exp0a
 
-.. code-block:: none
+* Delete the EXP::
 
-   sudo nvme disconnect -n nqn.2016-06.io.spdk:vda-exp-da0-exp0
+    ./vda_cli exp delete --da-name da0 --exp-name exp0a
 
-Delete the exporter
+* Delete the DA::
 
-.. code-block:: none
+    ./vda_cli da delete --da-name da0
 
-   vda_cli --addr-port 127.0.0.1:9520 exp delete --da-name da0 --exp-name exp0
+* Delete the CN::
 
-Delete the disk array
+    ./vda_cli cn delete --sock-addr localhost:9820
 
-.. code-block:: none
+* Delete the PD::
 
-   vda_cli --addr-port 127.0.0.1:9520 da delete --da-name da0
+    ./vda_cli pd delete --sock-addr localhost:9720 --pd-name pd0
 
-Delete the controller node
+* Delete the DN::
 
-.. code-block:: none
+    ./vda_cli dn delete --sock-addr localhost:9720
 
-   vda_cli --addr-port 127.0.0.1:9520 cn delete --cn-name localhost:9820
+* Terminate all the processes::
 
-Delete the physical disk
+    killall vda_portal
+    killall vda_monitor
+    killall vda_dn_agent
+    killall vda_cn_agent
+    killall etcd
+    sudo killall reactor_0
 
-.. code-block:: none
+* Delete the dawork directory::
 
-   vda_cli --addr-port 127.0.0.1:9520 pd delete --dn-name localhost:9720 --pd-name pd0
-
-Delete the disk node
-
-.. code-block:: none
-
-   vda_cli --addr-port 127.0.0.1:9520 dn delete --dn-name localhost:9720
-
-Kill all processes
-
-.. code-block:: none
-
-   killall vda_portal
-   killall vda_monitor
-   killall vda_dn_agent
-   killall vda_cn_agent
-   sudo killall reactor_0
-
-Drop the database
-
-.. code-block:: none
-
-   vda_db --action drop --db-uri sqlite:////tmp/vda.db
-
+    rm -rf /tmp/vda_data
