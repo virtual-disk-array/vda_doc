@@ -58,6 +58,7 @@ Launch DN components
 For each :ref:`DN <dn-label>`, we should run a spdk application and the dn_agent. First,
 go to the spdk directory and run below commands::
 
+  sudo scripts/setup.sh  # only run it once after reboot
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
   sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
   sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
@@ -82,12 +83,14 @@ Then go to the vda directory and run below commands::
   --tr-conf '{"trtype":"TCP"}' \
   > /tmp/vda_data/dn_agent.log 2>&1 &
 
-The ``--lis-conf`` and ``--tr-conf`` are json strings. The values in
-``--lis-conf`` will be passed to the SPDK ``nvmf_subsystem_add_listener``
-RPC. The values in ``tr-conf`` will be passed to the SPDK
-``nvmf_create_transport`` RPC. They are used to configure the NVMeOF
-connection between :ref:`VD <vd-label>` and :ref:`cntlr <cntlr-label>`.
-You can specific any values the SPDK RPCs accepts.
+The vda_dn_agent listens the controlplane RPC on the ``--address``.
+The ``--lis-conf`` and ``--tr-conf`` are json strings. They are used
+for the dataplane connection. The values in ``--lis-conf`` will be
+passed to the SPDK ``nvmf_subsystem_add_listener`` RPC. The values in
+``tr-conf`` will be passed to the SPDK ``nvmf_create_transport``
+RPC. They are used to configure the NVMeOF connection between :ref:`VD
+<vd-label>` and :ref:`cntlr <cntlr-label>`.  You can specific any
+values the SPDK RPCs accepts.
 
 You can check the /tmp/vda_data/dn_agent.log, if everything is OK, you
 can find below log::
@@ -99,6 +102,7 @@ Launch CN components
 For each :ref:`CN <cn-label>`, we should run a spdk applicaiton and the cn-agent. First,
 go to the spdk directory and run below commands::
 
+  sudo scripts/setup.sh  # only run it once after reboot
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn.sock --wait-for-rpc > /tmp/vda_data/cn.log 2>&1 &
   sudo scripts/rpc.py -s /tmp/vda_data/cn.sock bdev_set_options -d
   sudo scripts/rpc.py -s /tmp/vda_data/cn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
@@ -119,11 +123,12 @@ Then go to the vda directory and run below commands::
   --tr-conf '{"trtype":"TCP"}' \
   > /tmp/vda_data/cn_agent.log 2>&1 &
 
-Similiar as DN, the ``lis-conf`` and ``--tr-conf`` are json
-strings. And  the are used by the SPDK ``nvmf_subsystem_add_listener``
+Similiar as DN, the ``--address`` is used for the controlplane
+RPC. The ``lis-conf`` and ``--tr-conf`` are json strings for dataplane
+connection. They are used by the SPDK ``nvmf_subsystem_add_listener``
 and ``nvmf_create_transport`` RPCs. They are used to configure the
-NVMeOF connection between :ref:`cntlr <cntlr-label>` and
-:ref:`host <host-label>`.
+NVMeOF connection between :ref:`cntlr <cntlr-label>` and :ref:`host
+<host-label>`.
 
 You can check the /tmp/vda_data/cn_agent.log, if everything is OK, you
 can find below log::
@@ -165,7 +170,20 @@ We have launched the dn_agent, but we don't store them to the etcd
 yet. So the VDA cluster doeosn't know them. We run below command to
 create a :ref:`DN <dn-label>` in the VDA cluster::
 
-  ./vda_cli dn create --sock-addr localhost:9720 --tr-svc-id 4420
+  ./vda_cli dn create --sock-addr localhost:9720 \
+  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4420
+
+The ``--sock-addr`` should match the ``--address`` parameter in the
+vda_dn_agent. The :ref:`portal <portal-label>` and :ref:`monitor <monitor-label>`
+will send RPCs to the ``sock-addr``. The value of ``--sock-addr`` is
+also used as a unique identifier of the DN. When we want to
+modify/delete a DN, or manage a :ref:`PD <pd-label>` in the DN, we
+should provide the ``sock-addr`` of the DN.
+
+The ``--tr-type``, ``--tr-addr``, ``--adr-fam`` and ``--tr-svc-id``
+should match the values we provided in the ``vda_dn_agent``. They are
+used for the NVMeOF dataplane connections between :ref:`VD <vd-label>`
+and :ref:`cntlr <cntlr-label>`.
 
 Create PD
 ^^^^^^^^^
@@ -174,13 +192,30 @@ In this guide, we create a 256M malloc :ref:`PD <pd-label>` for demo::
   ./vda_cli pd create --sock-addr localhost:9720 --pd-name pd0 \
   --bdev-type-key malloc --bdev-type-value 256
 
+The ``--sock-addr`` should match the value when we run the ``dn create``
+command. The ``--pd-name`` can be any string, they should be unique
+across the :ref:`DN <dn-label>`. The PDs in different DNs can have the
+same name. The ``--bdev-type-key malloc`` and ``--bdev-type-value 256``
+mean we create a 256M malloc bdev.
+
 Create CN
 ^^^^^^^^^
 Similar as :ref:`DN <dn-label>`, we have launched the cn_agent, but
 the VDA cluster doesn't know it yet. We run below command to create a
 :ref:`CN <cn-label>` in the VDA cluster::
 
-  ./vda_cli cn create --sock-addr localhost:9820 --tr-svc-id 4430
+  ./vda_cli cn create --sock-addr localhost:9820 \
+  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4430
+
+The ``--sock-addr`` should match the ``--address`` parameter in the
+vda_cn_agent. The :ref:`portal <portal-label>` and :ref:`monitor <monitor-label>`
+will send RPCs to the ``sock-addr``. The value of ``--sock-addr`` is
+also used as a unique identifier of the CN.
+
+The ``--tr-type``, ``--tr-addr``, ``--adr-fam`` and ``--tr-svc-id``
+should match the values we provided in teh ``vda_cn_agent``. They are
+use for the NVMeOF dataplane connections between :ref:`cntlr <cntlr-label>`
+and :ref:`host <host-label>`.
 
 Create DA
 ^^^^^^^^^
@@ -216,12 +251,18 @@ We have create a :ref:`DN <dn-label>`, a :ref:`CN <cn-label>` and a
 
 If everything is OK, we would get below response::
 
-  FIXME
+  {
+    "reply_info": {
+      "req_id": "9cb5476a-04c6-4889-9348-a66a3f262602",
+      "reply_msg": "succeed"
+    }
+  }
 
-Please note: the ``"reply_code": 0`` means the DA information has been
-stored to the etcd cluster. It doesn't mean the DA has been created
-successfully. To check whether the DA is created successfully, please
-refer the following section.
+
+Please note: the ``"reply_msg": "succeed"`` means the DA information
+has been stored to the etcd cluster. It doesn't mean the DA has been
+created successfully. To verify whether the DA has any problem, you
+should use the ``da get`` command to get the DA status.
 
 Get DA status
 ^^^^^^^^^^^^^
@@ -231,9 +272,70 @@ Run below command to get the DA status::
 
 If everything is OK, we would get below response::
 
-  FIXME
+  {
+    "reply_info": {
+      "req_id": "03d6b8c3-bdb8-48a5-826e-fd7a63f524a6",
+      "reply_msg": "succeed"
+    },
+    "disk_array": {
+      "da_id": "69b60fb6d26e4618898e9a5bfc3941a7",
+      "da_name": "da0",
+      "da_conf": {
+        "qos": {},
+        "strip_cnt": 1,
+        "strip_size_kb": 64
+      },
+      "cntlr_list": [
+        {
+          "cntlr_id": "f18e8e72a6c0451b93dcf2cf73836c91",
+          "sock_addr": "localhost:9820",
+          "is_primary": true,
+          "err_info": {
+            "timestamp": "2021-06-21 03:35:13.330887351 +0000 UTC"
+          }
+        }
+      ],
+      "grp_list": [
+        {
+          "grp_id": "b1d4adb7af74463b949edf664ea6aee8",
+          "size": 67108864,
+          "err_info": {
+            "timestamp": "2021-06-21 03:35:12.858939088 +0000 UTC"
+          },
+          "vd_list": [
+            {
+              "vd_id": "2b37602b47e84e61bddd06133ca3c192",
+              "sock_addr": "localhost:9720",
+              "pd_name": "pd0",
+              "size": 67108864,
+              "qos": {},
+              "be_err_info": {
+                "timestamp": "2021-06-21 03:35:11.15086787 +0000 UTC"
+              },
+              "fe_err_info": {
+                "timestamp": "2021-06-21 03:35:12.786866942 +0000 UTC"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
 
-(FIXME: explain the result and make sure the DA has no error)
+
+The ``cntlr_list`` represent all the :ref:`cntlrs <cntlr-label>` the
+DA has. The da0 has only 1 cntlr, which is allcoated from the DN
+``localhost:9820`` and it is the primary cntlr. The ``err_info`` only
+has a timestamp, which means the error code is 0 (because GRPC omit 0
+value). So the cntlr has no problem.
+
+The :ref:`VDs <vd-label>` are aggregated to group. You can find all
+groups in the ``grp_list`` field. Here we only have a single group and
+a single vd. The ``be_err_info`` indicate the error information on the
+:ref:`DN <dn-label>`. The ``fe_err_info`` indicate the error information
+on the :ref:`CN <cn-label>`. Similary as the the cntlr ``err_info``
+field, if we only find a ``timestamp`` field in them, it means the
+error code is 0 (no error).
 
 Create an EXP
 ^^^^^^^^^^^^^
@@ -251,12 +353,17 @@ Run below command to create an :ref:`EXP <exp-label>`::
 
 If everything is OK, we would get below response::
 
-  FIXME
+  {
+    "reply_info": {
+      "req_id": "29964426-f30b-4c1a-b3e3-25813e59c7c2",
+      "reply_msg": "succeed"
+    }
+  }
 
-Please note; the ``"reply_code": 0`` measn the EXP information has
+Please note; the ``"reply_msg": "succeed"`` measn the EXP information has
 been stored to the etcd cluster. It doesn't mean the EXP has been
-created successfully. To check whether the EXP is created
-successfully, please refer the following section.
+created successfully. To verify whether the EXP has any problem, you
+should use the ``exp get`` command to get the EXP status.
 
 Get EXP status
 ^^^^^^^^^^^^^^
@@ -266,8 +373,40 @@ Run below command to get the :ref:`EXP <exp-label>` status::
 
 Below is the result::
 
-  FIXME
+  {
+    "reply_info": {
+      "req_id": "688c9ece-d60d-469d-a1df-5eb385da44c8",
+      "reply_msg": "succeed"
+    },
+    "exporter": {
+      "exp_id": "7a6c61442550492ea1f38c617e1864b3",
+      "exp_name": "exp0a",
+      "initiator_nqn": "nqn.2016-06.io.spdk:host0",
+      "target_nqn": "nqn.2016-06.io.vda:exp-da0-exp0a",
+      "serial_number": "c5e94c313982b7e362dd",
+      "model_number": "VDA_CONTROLLER",
+      "exp_info_list": [
+        {
+          "nvmf_listener": {
+            "tr_type": "tcp",
+            "adr_fam": "ipv4",
+            "tr_addr": "127.0.0.1",
+            "tr_svc_id": "4430"
+          },
+          "err_info": {
+            "timestamp": "2021-06-21 04:16:33.986866926 +0000 UTC"
+          }
+        }
+      ]
+    }
+  }
 
+In the :ref:`DA <da-label>`, each :ref:`cntlr <cntlr-label>` has a EXP
+instance. The ``exp_info_list`` lists the EXP status in all the
+cntlrs. The ``nvmf_listener`` provide the NVMeOF information. The
+:ref:`host <host-label>` can use these information to connect to
+it. Similar as DA, if you can only see the ``timestamp`` field in
+``err_info``, it means the EXP has no problem.
 
 Connect to the DA/EXP
 ^^^^^^^^^^^^^^^^^^^^^
@@ -279,7 +418,8 @@ Install the nvme-cli. E.g. you may run below command in a ubuntu system::
 
   sudo apt install -y nvme-cli
 
-Connect to the DA/EXP::
+Connect to the DA/EXP (you can get all the requried parameters from
+the ``exp get`` command)::
 
   sudo nvme connect -t tcp -n nqn.2016-06.io.vda:exp-da0-exp0a -a 127.0.0.1 -s 4430 --hostnqn nqn.2016-06.io.spdk:host0
 
