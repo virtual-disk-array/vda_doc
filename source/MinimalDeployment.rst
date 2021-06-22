@@ -463,6 +463,6 @@ Clean up all resources
     killall etcd
     sudo killall reactor_0
 
-* Delete the dawork directory::
+* Delete the work directory::
 
     rm -rf /tmp/vda_data
