@@ -16,7 +16,7 @@ logs, etcd data) to this directory. ::
 Install and launch etcd
 ^^^^^^^^^^^^^^^^^^^^^^^
 Follow the `install guide <https://etcd.io/docs/v3.4/install/>`_ to
-install the etcd. ::
+install etcd. ::
 
   cd ~
   curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.4.16/etcd-v3.4.16-linux-amd64.tar.gz

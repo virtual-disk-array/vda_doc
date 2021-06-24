@@ -26,7 +26,7 @@ logs, etcd data) to this directory. ::
 Install and launch etcd
 ^^^^^^^^^^^^^^^^^^^^^^^
 Follow the `install guide <https://etcd.io/docs/v3.4/install/>`_ to
-install the etcd. ::
+install etcd. ::
 
   cd ~
   curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.4.16/etcd-v3.4.16-linux-amd64.tar.gz
@@ -70,8 +70,8 @@ Install vda
 Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
 Download and unzip the package.
 
-Launch ``dn0``
-^^^^^^^^^^^^^^
+Launch dn0
+^^^^^^^^^^
 Go to the spdk directory, run below commands::
 
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn0.sock --wait-for-rpc > /tmp/vda_data/dn0.log 2>&1 &
@@ -89,11 +89,11 @@ Then go to the vda directory, run below commands::
   --tr-conf '{"trtype":"TCP"}' \
   > /tmp/vda_data/dn_agent_0.log 2>&1 &
 
-We let the ``dn0`` controlplane listen on 127.0.0.1:9720, the dataplane
+We let the dn0 controlplane listen on 127.0.0.1:9720, the dataplane
 listen on 127.0.0.1:4420.
 
-Launch ``dn1``
-^^^^^^^^^^^^^^
+Launch dn1
+^^^^^^^^^^
 Go to the spdk directory, run below commands::
 
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn1.sock --wait-for-rpc > /tmp/vda_data/dn1.log 2>&1 &
@@ -111,12 +111,11 @@ Then go to the vda directory, run below commands::
   --tr-conf '{"trtype":"TCP"}' \
   > /tmp/vda_data/dn_agent_1.log 2>&1 &
 
-We let the ``dn1`` controlplane listen on 127.0.0.1:9721, the dataplane
+We let the dn1 controlplane listen on 127.0.0.1:9721, the dataplane
 listen on 127.0.0.1:4421.
 
-
-Launch ``cn0``
-^^^^^^^^^^^^^^
+Launch cn0
+^^^^^^^^^^
 Go the the spdk directory, run below commands::
 
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn0.sock --wait-for-rpc > /tmp/vda_data/cn0.log 2>&1 &
@@ -134,11 +133,11 @@ Then go to the vda directory, run below commands::
   --tr-conf '{"trtype":"TCP"}' \
   > /tmp/vda_data/cn_agent_0.log 2>&1 &
 
-We let the ``cn0`` controlplane listen on 127.0.0.1:9820, the dataplane
+We let the cn0 controlplane listen on 127.0.0.1:9820, the dataplane
 listen on 127.0.0.1:4430.
 
-Launch ``cn1``
-^^^^^^^^^^^^^^
+Launch cn1
+^^^^^^^^^^
 Go the the spdk directory, run below commands::
 
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn1.sock --wait-for-rpc > /tmp/vda_data/cn1.log 2>&1 &
@@ -156,7 +155,7 @@ Then go to the vda directory, run below commands::
   --tr-conf '{"trtype":"TCP"}' \
   > /tmp/vda_data/cn_agent_1.log 2>&1 &
 
-We let the ``cn1`` controlplane listen on 127.0.0.1:9821, the dataplane
+We let the cn1 controlplane listen on 127.0.0.1:9821, the dataplane
 listen on 127.0.0.1:4431.
 
 Launch portal
@@ -177,53 +176,59 @@ Run below command::
 
 Create DNs, PDs and CNs
 ^^^^^^^^^^^^^^^^^^^^^^^
-Create ``dn0``::
+Create dn0::
   
   ./vda_cli dn create --sock-addr localhost:9720 \
   --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4420
 
-Create ``pd0`` on ``dn0``::
+Create pd0 on dn0::
 
+  dd if=/dev/zero of=/tmp/vda_data/pd0.img bs=1M count=512
   ./vda_cli pd create --sock-addr localhost:9720 --pd-name pd0 \
-  --bdev-type-key malloc --bdev-type-value 256
+  --bdev-type-key aio --bdev-type-value /tmp/vda_data/pd0.img
 
-Create ``dn1``::
+Create dn1::
 
   ./vda_cli dn create --sock-addr localhost:9721 \
   --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4421
 
-Create ``pd1`` on ``dn1``::
+Create pd1 on dn1::
 
+  dd if=/dev/zero of=/tmp/vda_data/pd1.img bs=1M count=512
   ./vda_cli pd create --sock-addr localhost:9721 --pd-name pd1 \
-  --bdev-type-key malloc --bdev-type-value 256
+  --bdev-type-key aio --bdev-type-value /tmp/vda_data/pd1.img
 
-The ``pd1`` could have the same ``pd-name`` as ``pd0``, here we use different
-name for avoid confusing.
+In previous tutorial, we use malloc bdev as pd. Here we use aio bdev
+as pd0 and pd1. The aio bdev is also used as test purpose. You could
+create a file as the backend of the aio bdev. The file size will be
+the aio bdev size. So the aio bdev could be used to emulate larger
+bdev than malloc bdev. The pd1 could have the same ``pd-name`` as pd0,
+here we use different name for avoid confusing.
 
-Create ``cn0``::
+Create cn0::
 
   ./vda_cli cn create --sock-addr localhost:9820 \
   --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4430
 
-Create ``cn1``::
+Create cn1::
 
   ./vda_cli cn create --sock-addr localhost:9821 \
   --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4431
 
-Create ``da0``
-^^^^^^^^^^^^^^
-create ``da0``::
+Create da0
+^^^^^^^^^^
+create da0::
 
   ./vda_cli da create --da-name da0 --size-mb 128 --physical-size-mb 128 \
   --cntlr-cnt 2 --strip-cnt 2 --strip-size-kb 64
 
 We have two :ref:`CNs <cn-label>`, so we can set ``--cntlr-cnt 2``,
-let the ``da0`` have two :ref:`cntlrs <cntlr-label>`. We have two
+let the da0 have two :ref:`cntlrs <cntlr-label>`. We have two
 :ref:`DNs <dn-label>`, so we can set ``--strip-cnt 2``, let the dn0
 have two strips.
 
-Get the ``da0`` status
-^^^^^^^^^^^^^^^^^^^^^^
+Get the da0 status
+^^^^^^^^^^^^^^^^^^
 Run below command to get the DA status::
 
   ./vda_cli da get --da-name da0
@@ -305,18 +310,18 @@ Below is an example response::
 There are two :ref:`cntlrs <cntlr-label>` in the ``cntlr_list``. We
 can find ``"is_primary": true`` from the first cntlr, so it is the
 primary. There are also two :ref:`VDs <vd-label>` in the ``vd_list``,
-one is allocated from ``localhost:9720/pd0``, another is allocated
-from ``localhost:9721/pd1``.
+one is allocated from localhost:9720/pd0, another is allocated
+from localhost:9721/pd1.
 
-Create ``exp0a``
-^^^^^^^^^^^^^^^^
+Create exp0a
+^^^^^^^^^^^^
 Run below command to create an :ref:`EXP <exp-label>`::
 
   ./vda_cli exp create --da-name da0 --exp-name exp0a \
   --initiator-nqn nqn.2016-06.io.spdk:host0
 
-Get ``exp0a`` status
-^^^^^^^^^^^^^^^^^^^^
+Get exp0a status
+^^^^^^^^^^^^^^^^
 Run below command to get the :ref:`EXP <exp-label>` status::
 
   ./vda_cli exp get --da-name da0 --exp-name exp0a
@@ -632,35 +637,35 @@ Clean up all resources
 
   It indicates both of the two controllers are disconnected.
 
-* Delete the ``exp0a``::
+* Delete the exp0a::
 
     ./vda_cli exp delete --da-name da0 --exp-name exp0a
 
-* Delete the ``da0``::
+* Delete the da0::
 
     ./vda_cli da delete --da-name da0
 
-* Delete the ``cn0``::
+* Delete the cn0::
 
     ./vda_cli cn delete --sock-addr localhost:9820
 
-* Delete the ``cn1``::
+* Delete the cn1::
 
     ./vda_cli cn delete --sock-addr localhost:9821
 
-* Delete the ``pd0``::
+* Delete the pd0::
 
     ./vda_cli pd delete --sock-addr localhost:9720 --pd-name pd0
 
-* Delete the ``dn0``::
+* Delete the dn0::
 
     ./vda_cli dn delete --sock-addr localhost:9720
 
-* Delete the ``pd1``::
+* Delete the pd1::
 
     ./vda_cli pd delete --sock-addr localhost:9721 --pd-name pd1
 
-* Delete the ``dn1``::
+* Delete the dn1::
 
     ./vda_cli dn delete --sock-addr localhost:9721
 

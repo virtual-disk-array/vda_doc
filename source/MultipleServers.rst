@@ -1,642 +1,293 @@
 Multiple Servers Deployment
 ===========================
 
-In this tutorial, we deploy the vda cluster components to multiple
-servers. Below is the architecture:
+A production environment have lots of :ref:`DNs <dn-label>` and
+:ref:`CNs <cn-label>`, and may have multiple :ref:`portals <portal-label>`
+and  :ref:`monitors <monitor-label>` for high availability and
+scalability. In this tutorial, we will deploy two instances for each
+component. Below is the architecture:
 
 .. image:: /images/multiple_servers_deployment.png
 
-We use 10 servers, 3 for controller plane, 4 for data plane, 1 for the
-client of the controller plane, 2 for the users of the data plane.
+Below are the ip address of each components:
+
+* 192.168.0.10 dn0
+* 192.168.0.11 dn1
+* 192.168.0.12 cn0
+* 192.168.0.13 cn1
+* 192.168.0.14 host0
+* 192.168.0.15 host1
+* 192.168.0.16 etcd
+* 192.168.0.17 portal0
+* 192.168.0.18 portal1
+* 192.168.0.19 monitor0
+* 192.168.0.20 monitor1
+* 192.168.0.21 cli
+
+Here we only deploy a single etcd server. We could deploy multiple
+etcd servers, please refer the `etcd cluster guide <https://etcd.io/docs/v3.4/op-guide/clustering/>`_.
+But the etcd cluster is out of the scope of this guide. So here we
+only deploy a single etcd for demo.
+
+Launch etcd
+^^^^^^^^^^^
+Login to the etcd server (192.168.0.16).
+
+* Create work directory::
+
+    mkdir -p /tmp/vda_data
+
+* Follow the `install guide <https://etcd.io/docs/v3.4/install/>`_ to
+  install etcd::
+
+    cd ~
+    curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.4.16/etcd-v3.4.16-linux-amd64.tar.gz
+    tar xvf etcd-v3.4.16-linux-amd64.tar.gz
+
+* Go to the etcd directory and run below command::
+
+    cd etcd-v3.4.16-linux-amd64
+    ./etcd --listen-client-urls http://localhost:2389 \
+    --advertise-client-urls http://localhost:2389 \
+    --listen-peer-urls http://localhost:2390 \
+    --name etcd0 --data-dir /tmp/vda_data/etcd0.data \
+    > /tmp/vda_data/etcd0.log 2>&1 &
+
+Launch dn0
+^^^^^^^^^^
+Login to the dn0 server (192.168.0.10).
+
+* Create work directory::
+
+    mkdir -p /tmp/vda_data
+
+* Install spdk
+  Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
+  ::
+    cd ~
+    git clone https://github.com/spdk/spdk
+    cd spdk
+    git submodule update --init
+    sudo scripts/pkgdep.sh
+    ./configure
+    make
+
+* Go to the spdk directory and run below commands::
+
+    sudo scripts/setup.sh
+    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
+    sudo chmod 777 /tmp/vda_data/dn.sock
+
+* Install vda
+  Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+  Download and unzip the package.
+
+* Go to the vda directory, launch `vda_dn_agent`::
+
+    ./vda_dn_agent --network tcp --address '192.168.0.10:9720' \
+    --sock-path /tmp/vda_data/dn.sock --sock-timeout 10 \
+    --lis-conf '{"trtype":"tcp","traddr":"192.168.0.10","adrfam":"ipv4","trsvcid":"4420"}' \
+    --tr-conf '{"trtype":"TCP"}' \
+    > /tmp/vda_data/dn_agent.log 2>&1 &
+
+Launch dn1
+^^^^^^^^^^
+Login to the dn1 server (192.168.0.11).
+
+* Create work directory::
+
+    mkdir -p /tmp/vda_data
+
+* Install spdk
+  Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
+  ::
+    cd ~
+    git clone https://github.com/spdk/spdk
+    cd spdk
+    git submodule update --init
+    sudo scripts/pkgdep.sh
+    ./configure
+    make
+
+* Go to the spdk directory and run below commands::
+
+    sudo scripts/setup.sh
+    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
+    sudo chmod 777 /tmp/vda_data/dn.sock
+
+* Install vda
+  Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+  Download and unzip the package.
+
+* Go to the vda directory, launch `vda_dn_agent`::
+
+    ./vda_dn_agent --network tcp --address '192.168.0.11:9720' \
+    --sock-path /tmp/vda_data/dn.sock --sock-timeout 10 \
+    --lis-conf '{"trtype":"tcp","traddr":"192.168.0.11","adrfam":"ipv4","trsvcid":"4420"}' \
+    --tr-conf '{"trtype":"TCP"}' \
+    > /tmp/vda_data/dn_agent.log 2>&1 &
+
+Launch cn0
+^^^^^^^^^^
+Login to the cn0 server (192.168.0.12).
+
+* Create work directory::
+
+    mkdir -p /tmp/vda_data
+
+* Install spdk
+  Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
+  ::
+    cd ~
+    git clone https://github.com/spdk/spdk
+    cd spdk
+    git submodule update --init
+    sudo scripts/pkgdep.sh
+    ./configure
+    make
 
-The 3 controller plane servers:
+* Go to the spdk directory and run below commands::
+
+    sudo scripts/setup.sh
+    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
+    sudo chmod 777 /tmp/vda_data/dn.sock
 
-#. portal: Accept gRPC request. The portal is stateless, you could
-   deploy multiple portals and put a load balancer at the front of
-   them.
-#. monitor: Syncup the cluster metadata to the disk nodes and
-   controller nodes. You could deploy multiple monitors and let each
-   monitor work on a subset of the disk nodes and controller nodes.
-#. postgresql: It is the database, in this tutorial, we will use
-   postgresql as the database. MySQL should work well too.
+* Install vda
+  Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+  Download and unzip the package.
 
-The 4 data plane servers:
+* Go to the vda directory, launch `vda_cn_agent`::
 
-#. cn0 and cn1: two controller nodes
-#. dn0 and dn1: two data nodes
+    ./vda_cn_agent --network tcp --address '192.168.0.12:9820' \
+    --sock-path /tmp/vda_data/cn.sock --sock-timeout 10 \
+    --lis-conf '{"trtype":"tcp","traddr":"192.168.0.12","adrfam":"ipv4","trsvcid":"4430"}' \
+    --tr-conf '{"trtype":"TCP"}' \
+    > /tmp/vda_data/cn_agent.log 2>&1 &
 
-The vda_cli is the client of the controller plane. We send the gRPC
-commands from this server, e.g. create a disk array, export a disk
-array to a host and so on.
+Launch cn1
+^^^^^^^^^^
+Login to the cn1 server (192.168.0.13).
 
-The host0 and host1 are the consumers of the disk arrays. After
-vda_cli creates a disk array and exports to a host, the host could
-connect to that disk array over the NVMeOF.
+* Create work directory::
 
-Similar as previous guides, in this tutorial, all the servers are
-ubuntu20.04. They could be deployed to other linux distribution too.
+    mkdir -p /tmp/vda_data
 
-Below are the server ip addresses and the server name:
+* Install spdk
+  Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
+  ::
+    cd ~
+    git clone https://github.com/spdk/spdk
+    cd spdk
+    git submodule update --init
+    sudo scripts/pkgdep.sh
+    ./configure
+    make
 
-192.168.0.10 postgresql
+* Go to the spdk directory and run below commands::
 
-192.168.0.11 portal
+    sudo scripts/setup.sh
+    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
+    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
+    sudo chmod 777 /tmp/vda_data/dn.sock
 
-192.168.0.12 monitor
+* Install vda
+  Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+  Download and unzip the package.
 
-192.168.0.13 vda_cli
+* Go to the vda directory, launch `vda_cn_agent`::
 
-192.168.0.14 dn0
+    ./vda_cn_agent --network tcp --address '192.168.0.13:9820' \
+    --sock-path /tmp/vda_data/cn.sock --sock-timeout 10 \
+    --lis-conf '{"trtype":"tcp","traddr":"192.168.0.13","adrfam":"ipv4","trsvcid":"4430"}' \
+    --tr-conf '{"trtype":"TCP"}' \
+    > /tmp/vda_data/cn_agent.log 2>&1 &
 
-192.168.0.15 dn1
+Launch portal0
+^^^^^^^^^^^^^^
+Login to the portal0 server (192.168.0.17).
 
-192.168.0.16 cn0
+* Create work directory::
 
-192.168.0.17 cn1
+    mkdir -p /tmp/vda_data
 
-192.168.0.18 host0
+* Install vda
+  Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+  Download and unzip the package.
 
-192.168.0.19 host1
+* Go to the vda directory, launch `vda_portal`::
 
-Install and configure postgresql
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Login to the postgresql server (192.168.0.10).
+    ./vda_portal --portal-address '192.168.0.17:9520' --portal-network tcp \
+    --etcd-endpoints 192.168.0.16:2389 \
+    > /tmp/vda_data/portal.log 2>&1 &
 
-Install postgresql from the default software repository, create user,
-password and database.
+Launch portal1
+^^^^^^^^^^^^^^
+Login to the portal1 server (192.168.0.18).
 
-.. code-block:: none
+* Create work directory::
 
-   sudo apt install -y postgresql
-   sudo -u postgres psql
-   create database vda_db;
-   create user vda_user with encrypted password 'vda_password';
-   grant all privileges on database vda_db to vda_user;
-   exit
+    mkdir -p /tmp/vda_data
 
-We should configure postgresql, let it allow connect from remote
-clients. First, we should find the configuration file of
-postgresql. We may run the ps command:
+* Install vda
+  Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+  Download and unzip the package.
 
-.. code-block:: none
+* Go to the vda directory, launch `vda_portal`::
 
-   ps -f -C postgres
+    ./vda_portal --portal-address '192.168.0.18:9520' --portal-network tcp \
+    --etcd-endpoints 192.168.0.16:2389 \
+    > /tmp/vda_data/portal.log 2>&1 &
 
-The output should be:
+Launch monitor0
+^^^^^^^^^^^^^^^
+Login to the monitor0 server (192.168.0.19).
 
-.. code-block:: none
+* Create work directory::
 
-   UID          PID    PPID  C STIME TTY          TIME CMD
-   postgres     639       1  0 05:16 ?        00:00:00 /usr/lib/postgresql/12/bin/postgres -D /var/lib/postgresql/12/main -c config_file=/etc/postgresql/12/main/postgresql.conf
-   postgres     660     639  0 05:16 ?        00:00:00 postgres: 12/main: checkpointer
-   postgres     661     639  0 05:16 ?        00:00:00 postgres: 12/main: background writer
-   postgres     662     639  0 05:16 ?        00:00:00 postgres: 12/main: walwriter
-   postgres     663     639  0 05:16 ?        00:00:00 postgres: 12/main: autovacuum launcher
-   postgres     664     639  0 05:16 ?        00:00:00 postgres: 12/main: stats collector
-   postgres     665     639  0 05:16 ?        00:00:00 postgres: 12/main: logical replication launcher
+    mkdir -p /tmp/vda_data
 
-Then we now the configuration file is
-/etc/postgresql/12/main/postgresql.conf. Open this file, find
-"listen_address = 'localhost'" and comment it, add "listen_addresses =
-'*'"
+* Install vda
+  Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+  Download and unzip the package.
 
-.. code-block:: none
+* Go to the vda directory, launch `vda_monitor`::
 
-   listen_addresses = '*'
-   #listen_addresses = 'localhost'         # what IP address(es) to listen on;
+    ./vda_monitor --etcd-endpoints 192.168.0.16:2389 \
+    > /tmp/vda_data/monitor.log 2>&1 &
 
-find the hba_file from the configuration file
+Launch monitor1
+^^^^^^^^^^^^^^^
+Login to the monitor0 server (192.168.0.20).
 
-.. code-block:: none
+* Create work directory::
 
-   cat /etc/postgresql/12/main/postgresql.conf | grep hba_file
-   hba_file = '/etc/postgresql/12/main/pg_hba.conf'        # host-based authentication file
+    mkdir -p /tmp/vda_data
 
-Open /etc/postgresql/12/main/pg_hba.conf, add below line:
+* Install vda
+  Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+  Download and unzip the package.
 
-.. code-block:: none
+* Go to the vda directory, launch `vda_monitor`::
 
-   host    all             all             192.168.0.0/24          md5
+    ./vda_monitor --etcd-endpoints 192.168.0.16:2389 \
+    > /tmp/vda_data/monitor.log 2>&1 &
 
-Then restart the postgresql:
 
-.. code-block:: none
 
-   sudo systemctl restart postgresql
 
-Configure portal
-^^^^^^^^^^^^^^^^
-Login to portal (192.168.0.11).
 
-Install vda package:
-
-.. code-block:: none
-
-   sudo apt install -y python3-venv
-   python3 -m venv vda_env
-   source vda_env/bin/activate
-   pip install vda
-
-Install postgresql python client psycopg2
-
-.. code-block:: none
-
-   sudo apt install -y gcc
-   sudo apt install -y python3-dev
-   sudo apt install -y libpq-dev
-   pip install wheel
-   pip install psycopg2
-
-Init the database, we only need to do it once when we create the
-cluster
-
-.. code-block:: none
-
-   vda_db --action create --db-uri postgresql://vda_user:vda_password@192.168.0.10:5432/vda_db
-
-Launch the portal process
-
-.. code-block:: none
-
-   nohup vda_portal --listener 192.168.0.11 --port 9520 --db-uri postgresql://vda_user:vda_password@192.168.0.10:5432/vda_db > /tmp/vda_portal.log 2>&1 &
-
-Configure monitor
-^^^^^^^^^^^^^^^^^
-Login to monitor (192.168.0.12).
-
-Install vda package:
-
-Install vda package:
-
-.. code-block:: none
-
-   sudo apt install -y python3-venv
-   python3 -m venv vda_env
-   source vda_env/bin/activate
-   pip install vda
-
-Install postgresql python client psycopg2
-
-.. code-block:: none
-
-   sudo apt install -y gcc
-   sudo apt install -y python3-dev
-   sudo apt install -y libpq-dev
-   pip install wheel
-   pip install psycopg2
-
-Launch the monitor process:
-
-.. code-block:: none
-
-   nohup vda_monitor --listener 192.168.0.12 --port 9620 --db-uri postgresql://vda_user:vda_password@192.168.0.10:5432/vda_db > /tmp/vda_monitor.log 2>&1 &
-
-Configure dn0
-^^^^^^^^^^^^^
-Login to dn0 (192.168.0.14).
-
-Install spdk and init the spdk environment
-
-.. code-block:: none
-
-   cd ~
-   git clone https://github.com/spdk/spdk
-   cd spdk
-   git submodule update --init
-   sudo scripts/pkgdep.sh
-   ./configure
-   make
-   sudo scripts/setup.sh
-
-Launch the spdk application
-
-.. code-block:: none
-
-   nohup sudo ./build/bin/spdk_tgt --rpc-socket /tmp/dn.sock --wait-for-rpc > /tmp/dn.log 2>&1 &
-
-Disable auto examine and change the sock file permission
-
-.. code-block:: none
-
-   sudo ./scripts/rpc.py -s /tmp/dn.sock bdev_set_options -d
-   sudo ./scripts/rpc.py -s /tmp/dn.sock framework_start_init
-   sudo ./scripts/rpc.py -s /tmp/dn.sock framework_wait_init
-   sudo chmod 777 /tmp/dn.sock
-
-Install vda package (we don't need to install postgresql python client
-in data plane)
-
-.. code-block:: none
-
-   cd ~
-   sudo apt install -y python3-venv
-   python3 -m venv vda_env
-   source vda_env/bin/activate
-   pip install vda
-
-Launch dn_agent
-
-.. code-block:: none
-
-   nohup vda_dn_agent --listener 192.168.0.14 --port 9720 --sock-path /tmp/dn.sock --listener-conf '{"trtype":"tcp","traddr":"192.168.0.14","adrfam":"ipv4","trsvcid":"4420"}' > /tmp/vda_dn_agent.log 2>&1 &
-
-Configure dn1
-^^^^^^^^^^^^^
-Login to dn1 (192.168.0.15).
-
-Install spdk and init the spdk environment
-
-.. code-block:: none
-
-   cd ~
-   git clone https://github.com/spdk/spdk
-   cd spdk
-   git submodule update --init
-   sudo scripts/pkgdep.sh
-   ./configure
-   make
-   sudo scripts/setup.sh
-
-Launch the spdk application
-
-.. code-block:: none
-
-   nohup sudo ./build/bin/spdk_tgt --rpc-socket /tmp/dn.sock --wait-for-rpc > /tmp/dn.log 2>&1 &
-
-Disable auto examine and change the sock file permission
-
-.. code-block:: none
-
-   sudo ./scripts/rpc.py -s /tmp/dn.sock bdev_set_options -d
-   sudo ./scripts/rpc.py -s /tmp/dn.sock framework_start_init
-   sudo ./scripts/rpc.py -s /tmp/dn.sock framework_wait_init
-   sudo chmod 777 /tmp/dn.sock
-
-Install vda package (we don't need to install postgresql python client
-in data plane)
-
-.. code-block:: none
-
-   cd ~
-   sudo apt install -y python3-venv
-   python3 -m venv vda_env
-   source vda_env/bin/activate
-   pip install vda
-
-Launch dn_agent
-
-.. code-block:: none
-
-   nohup vda_dn_agent --listener 192.168.0.15 --port 9720 --sock-path /tmp/dn.sock --listener-conf '{"trtype":"tcp","traddr":"192.168.0.15","adrfam":"ipv4","trsvcid":"4420"}' > /tmp/vda_dn_agent.log 2>&1 &
-
-Configure cn0
-^^^^^^^^^^^^^
-Login to cn0 (192.168.0.16).
-
-Install spdk and init the spdk environment
-
-.. code-block:: none
-
-   cd ~
-   git clone https://github.com/spdk/spdk
-   cd spdk
-   git submodule update --init
-   sudo scripts/pkgdep.sh
-   ./configure
-   make
-   sudo scripts/setup.sh
-
-Launch the spdk application
-
-.. code-block:: none
-
-   nohup sudo ./build/bin/spdk_tgt --rpc-socket /tmp/cn.sock --wait-for-rpc > /tmp/cn.log 2>&1 &
-
-Disable auto examine and change the sock file permission
-
-.. code-block:: none
-
-   sudo ./scripts/rpc.py -s /tmp/cn.sock bdev_set_options -d
-   sudo ./scripts/rpc.py -s /tmp/cn.sock framework_start_init
-   sudo ./scripts/rpc.py -s /tmp/cn.sock framework_wait_init
-   sudo chmod 777 /tmp/cn.sock
-
-Install vda package (we don't need to install postgresql python client
-in data plane)
-
-.. code-block:: none
-
-   cd ~
-   sudo apt install -y python3-venv
-   python3 -m venv vda_env
-   source vda_env/bin/activate
-   pip install vda
-
-Launch cn_agent
-
-.. code-block:: none
-
-   nohup vda_cn_agent --listener 192.168.0.16 --port 9820 --sock-path /tmp/cn.sock --listener-conf '{"trtype":"tcp","traddr":"192.168.0.16","adrfam":"ipv4","trsvcid":"4430"}' > /tmp/vda_cn_agent.log 2>&1 &
-
-Configure cn1
-^^^^^^^^^^^^^
-Login to cn1 (192.168.0.17).
-
-Install spdk and init the spdk environment
-
-.. code-block:: none
-
-   cd ~
-   git clone https://github.com/spdk/spdk
-   cd spdk
-   git submodule update --init
-   sudo scripts/pkgdep.sh
-   ./configure
-   make
-   sudo scripts/setup.sh
-
-Launch the spdk application
-
-.. code-block:: none
-
-   nohup sudo ./build/bin/spdk_tgt --rpc-socket /tmp/cn.sock --wait-for-rpc > /tmp/cn.log 2>&1 &
-
-Disable auto examine and change the sock file permission
-
-.. code-block:: none
-
-   sudo ./scripts/rpc.py -s /tmp/cn.sock bdev_set_options -d
-   sudo ./scripts/rpc.py -s /tmp/cn.sock framework_start_init
-   sudo ./scripts/rpc.py -s /tmp/cn.sock framework_wait_init
-   sudo chmod 777 /tmp/cn.sock
-
-Install vda package (we don't need to install postgresql python client
-in data plane)
-
-.. code-block:: none
-
-   cd ~
-   sudo apt install -y python3-venv
-   python3 -m venv vda_env
-   source vda_env/bin/activate
-   pip install vda
-
-Launch cn_agent
-
-.. code-block:: none
-
-   nohup vda_cn_agent --listener 192.168.0.17 --port 9820 --sock-path /tmp/cn.sock --listener-conf '{"trtype":"tcp","traddr":"192.168.0.17","adrfam":"ipv4","trsvcid":"4430"}' > /tmp/vda_cn_agent.log 2>& 1 &
-
-Configure vda_cli
-^^^^^^^^^^^^^^^^^
-Login to vda_cli (192.168.0.13).
-
-Install the vda package.
-
-.. code-block:: none
-
-   cd ~
-   sudo apt install -y python3-venv
-   python3 -m venv vda_env
-   source vda_env/bin/activate
-   pip install vda
-
-Invoke VDA gRPCs on vda_cli
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Run below commands on vda_cli (192.168.0.13).
-
-Add two dn nodes and create a malloc pd for each dn:
-
-.. code-block:: none
-
-   vda_cli --addr-port 192.168.0.11:9520 dn create --dn-name 192.168.0.14:9720 --dn-listener-conf '{"trtype":"tcp","traddr":"192.168.0.14","adrfam":"ipv4","trsvcid":"4420"}' --location 192.168.0.14:9720
-   vda_cli --addr-port 192.168.0.11:9520 pd create --dn-name 192.168.0.14:9720 --pd-name pd0 --pd-conf '{"type":"malloc","size":134217728}'
-   vda_cli --addr-port 192.168.0.11:9520 dn create --dn-name 192.168.0.15:9720 --dn-listener-conf '{"trtype":"tcp","traddr":"192.168.0.15","adrfam":"ipv4","trsvcid":"4420"}' --location 192.168.0.15:9720
-   vda_cli --addr-port 192.168.0.11:9520 pd create --dn-name 192.168.0.15:9720 --pd-name pd0 --pd-conf '{"type":"malloc","size":134217728}'
-
-Add two cn nodes:
-
-.. code-block:: none
-
-   vda_cli --addr-port 192.168.0.11:9520 cn create --cn-name 192.168.0.16:9820 --cn-listener-conf '{"trtype":"tcp","traddr":"192.168.0.16","adrfam":"ipv4","trsvcid":"4430"}' --location 192.168.0.16:9820
-   vda_cli --addr-port 192.168.0.11:9520 cn create --cn-name 192.168.0.17:9820 --cn-listener-conf '{"trtype":"tcp","traddr":"192.168.0.17","adrfam":"ipv4","trsvcid":"4430"}' --location 192.168.0.16:9820
-
-Create a disk array
-
-.. code-block:: none
-
-   vda_cli --addr-port 192.168.0.11:9520 da create --da-name da0 --cntlr-cnt 2 --da-size 33554432 --physical-size 33554432 --da-conf '{"stripe_count":2, "stripe_size_kb":64}'
-
-Export da0 to host0
-
-.. code-block:: none
-
-   vda_cli --addr-port 192.168.0.11:9520 exp create --da-name da0 --exp-name exp0 --initiator-nqn nqn.2016-06.io.spdk:host0
-
-Get the connection information
-
-.. code-block:: none
-
-   vda_cli --addr-port 192.168.0.11:9520 exp get --da-name da0 --exp-name exp0
-   {
-     "reply_info": {
-       "req_id": "1901d2298e404ac8a27989c2f4da7a2e",
-       "reply_code": 0,
-       "reply_msg": "success"
-     },
-     "exp_msg": {
-       "exp_id": "c4ab9583fd9842ba906fab3f5b536701",
-       "exp_name": "exp0",
-       "exp_nqn": "nqn.2016-06.io.spdk:vda-exp-da0-exp0",
-       "da_name": "da0",
-       "initiator_nqn": "nqn.2016-06.io.spdk:host0",
-       "snap_name": "",
-       "es_msg_list": [
-         {
-           "es_id": "0e31eecd1efc4fc2aa1054a5e1618c68",
-           "cntlr_idx": 0,
-           "cn_name": "192.168.0.16:9820",
-           "cn_listener_conf": "{\"trtype\":\"tcp\",\"traddr\":\"192.168.0.16\",\"adrfam\":\"ipv4\",\"trsvcid\":\"4430\"}",
-           "error": false,
-           "error_msg": ""
-         },
-         {
-           "es_id": "8ffd7919cb4140e49dc6baa9aaeb1aa0",
-           "cntlr_idx": 1,
-           "cn_name": "192.168.0.17:9820",
-           "cn_listener_conf": "{\"trtype\":\"tcp\",\"traddr\":\"192.168.0.17\",\"adrfam\":\"ipv4\",\"trsvcid\":\"4430\"}",
-           "error": false,
-           "error_msg": ""
-         }
-       ]
-     }
-   }
-
-Connect the da0 on host0
-^^^^^^^^^^^^^^^^^^^^^^^^
-Login to host0 (192.168.0.18).
-
-Load nvme-tcp module, install nvme-cli and jq
-
-.. code-block:: none
-
-   sudo modprobe nvme-tcp
-   sudo apt install -y nvme-cli
-   sudo apt install -y jq
-
-Connect to the two controller:
-
-.. code-block:: none
-
-   sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da0-exp0 -a 192.168.0.16 -s 4430 --hostnqn nqn.2016-06.io.spdk:host0
-   sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da0-exp0 -a 192.168.0.17 -s 4430 --hostnqn nqn.2016-06.io.spdk:host0
-
-Find the nvme device name from the NQN:
-
-.. code-block:: none
-
-   sudo nvme list-subsys -o json | jq '.Subsystems[] | select(.NQN=="nqn.2016-06.io.spdk:vda-exp-da0-exp0")'
-   {
-     "Name": "nvme-subsys0",
-     "NQN": "nqn.2016-06.io.spdk:vda-exp-da0-exp0",
-     "Paths": [
-       {
-         "Name": "nvme0",
-         "Transport": "tcp",
-         "Address": "traddr=192.168.0.16 trsvcid=4430",
-         "State": "live"
-       },
-       {
-         "Name": "nvme1",
-         "Transport": "tcp",
-         "Address": "traddr=192.168.0.17 trsvcid=4430",
-         "State": "live"
-       }
-     ]
-   }
-
-We can find two devices (nvme0 and nvme1). If the
-"CONFIG_NVME_MULTIPATH" is enabled in the linux kernel, linux kernel
-will combine them together and you only need to access
-/dev/nvme0n1. E.g. you can get the device partition information:
-
-.. code-block:: none
-
-   sudo parted -s /dev/nvme0n1 print
-   Error: /dev/nvme0n1: unrecognised disk label
-   Model: VDA_CONTROLLER (nvme)
-   Disk /dev/nvme0n1: 33.6MB
-   Sector size (logical/physical): 4096B/4096B
-   Partition Table: unknown
-   Disk Flags:
-
-Create another disk array on vda_cli
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Run below commands on vda_cli (192.168.0.13).
-
-Create da1
-
-.. code-block:: none
-
-   vda_cli --addr-port 192.168.0.11:9520 da create --da-name da1 --cntlr-cnt 2 --da-size 67108864 --physical-size 67108864 --da-conf '{"stripe_count":2, "stripe_size_kb":64}'
-
-Export to host1:
-
-.. code-block:: none
-
-   vda_cli --addr-port 192.168.0.11:9520 exp create --da-name da1 --exp-name exp1 --initiator-nqn nqn.2016-06.io.spdk:host1
-
-Get the connection information:
-
-.. code-block:: none
-
-   vda_cli --addr-port 192.168.0.11:9520 exp get --da-name da1 --exp-name exp1
-   {
-     "reply_info": {
-       "req_id": "8b809cacfff241f9893933b0a112af43",
-       "reply_code": 0,
-       "reply_msg": "success"
-     },
-     "exp_msg": {
-       "exp_id": "8aa4668dbd044dec939959dcaf8f902a",
-       "exp_name": "exp1",
-       "exp_nqn": "nqn.2016-06.io.spdk:vda-exp-da1-exp1",
-       "da_name": "da1",
-       "initiator_nqn": "nqn.2016-06.io.spdk:host1",
-       "snap_name": "",
-       "es_msg_list": [
-         {
-           "es_id": "faf04922b81a41c58c20e9228bfbcb59",
-           "cntlr_idx": 0,
-           "cn_name": "192.168.0.16:9820",
-           "cn_listener_conf": "{\"trtype\":\"tcp\",\"traddr\":\"192.168.0.16\",\"adrfam\":\"ipv4\",\"trsvcid\":\"4430\"}",
-           "error": false,
-           "error_msg": ""
-         },
-         {
-           "es_id": "572fd850517b4acfa50b8115e6c20781",
-           "cntlr_idx": 1,
-           "cn_name": "192.168.0.17:9820",
-           "cn_listener_conf": "{\"trtype\":\"tcp\",\"traddr\":\"192.168.0.17\",\"adrfam\":\"ipv4\",\"trsvcid\":\"4430\"}",
-           "error": false,
-           "error_msg": ""
-         }
-       ]
-     }
-   }
-
-Connect the da1 on host1
-^^^^^^^^^^^^^^^^^^^^^^^^
-Login to host1 (192.168.0.19).
-
-Load nvme-tcp module, install nvme-cli and jq
-
-.. code-block:: none
-
-   sudo modprobe nvme-tcp
-   sudo apt install -y nvme-cli
-   sudo apt install -y jq
-
-Connect to the two controller:
-
-.. code-block:: none
-
-   sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da1-exp1 -a 192.168.0.16 -s 4430 --hostnqn nqn.2016-06.io.spdk:host1
-   sudo nvme connect -t tcp -n nqn.2016-06.io.spdk:vda-exp-da1-exp1 -a 192.168.0.17 -s 4430 --hostnqn nqn.2016-06.io.spdk:host1
-
-Find the device name from NQN:
-
-.. code-block:: none
-
-   sudo nvme list-subsys -o json | jq '.Subsystems[] | select(.NQN=="nqn.2016-06.io.spdk:vda-exp-da1-exp1")'
-   {
-     "Name": "nvme-subsys0",
-     "NQN": "nqn.2016-06.io.spdk:vda-exp-da1-exp1",
-     "Paths": [
-       {
-         "Name": "nvme0",
-         "Transport": "tcp",
-         "Address": "traddr=192.168.0.16 trsvcid=4430",
-         "State": "live"
-       },
-       {
-         "Name": "nvme1",
-         "Transport": "tcp",
-         "Address": "traddr=192.168.0.17 trsvcid=4430",
-         "State": "live"
-       }
-     ]
-   }
-
-
-Similar as host0, we could access /dev/nvme0n1:
-
-.. code-block:: none
-
-   sudo parted -s /dev/nvme0n1 print
-   Error: /dev/nvme0n1: unrecognised disk label
-   Model: VDA_CONTROLLER (nvme)
-   Disk /dev/nvme0n1: 67.1MB
-   Sector size (logical/physical): 4096B/4096B
-   Partition Table: unknown
-   Disk Flags:
