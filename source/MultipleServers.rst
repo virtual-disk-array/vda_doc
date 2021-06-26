@@ -94,6 +94,13 @@ Login to the dn0 server (192.168.0.10).
     --tr-conf '{"trtype":"TCP"}' \
     > /tmp/vda_data/dn_agent.log 2>&1 &
 
+* Get the nvme device pci address::
+
+    lspci | grep Non-Volatile
+
+  There are 2 nvme devices in dn0, they are: FIXME.
+  You should find different pci address(es) in your environment.
+
 Launch dn1
 ^^^^^^^^^^
 Login to the dn1 server (192.168.0.11).
@@ -134,6 +141,13 @@ Login to the dn1 server (192.168.0.11).
     --lis-conf '{"trtype":"tcp","traddr":"192.168.0.11","adrfam":"ipv4","trsvcid":"4420"}' \
     --tr-conf '{"trtype":"TCP"}' \
     > /tmp/vda_data/dn_agent.log 2>&1 &
+
+* Get the nvme device pci address::
+
+    lspci | grep Non-Volatile
+
+  There are 2 nvme devices in dn0, they are: FIXME.
+  You should find different pci address(es) in your environment.
 
 Launch cn0
 ^^^^^^^^^^
@@ -287,7 +301,152 @@ Login to the monitor0 server (192.168.0.20).
     ./vda_monitor --etcd-endpoints 192.168.0.16:2389 \
     > /tmp/vda_data/monitor.log 2>&1 &
 
+Operate the VDA cluster
+^^^^^^^^^^^^^^^^^^^^^^^
+Login to the cli server (192.168.0.21)
 
+* Install vda
+  Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
+  Download and unzip the package. Then go to the vda directory.
 
+* Create dn0::
 
+    ./vda_cli dn create --sock-addr 192.168.0.10:9720 \
+    --tr-type tcp --tr-addr 192.168.0.10 --adr-fam ipv4 --tr-svc-id 4420
 
+* Create the first pd on dn0::
+
+    ./vda_cli pd create --sock-addr 192.168.0.10:9720 --pd-name pd00 \
+    --bdev-type-key nvme --bdev-type-value FIXME
+
+* Create the second pd on dn0::
+
+    ./vda_cli pd create --sock-addr 192.168.0.10:9720 --pd-name pd01 \
+    --bdev-type-key nvme --bdev-type-value FIXME
+
+* Create dn1::
+
+    ./vda_cli dn create --sock-addr 192.168.0.11:9720 \
+    --tr-type tcp --tr-addr 192.168.0.11 --adr-fam ipv4 --tr-svc-id 4420
+
+* Create the first pd on dn1::
+
+    ./vda_cli pd create --sock-addr 192.168.0.11:9720 --pd-name pd10 \
+    --bdev-type-key nvme --bdev-type-value FIXME
+
+* Create the second pd on dn1::
+
+    ./vda_cli pd create --sock-addr 192.168.0.11:9720 --pd-name pd11 \
+    --bdev-type-key nvme --bdev-type-value FIXME
+
+* Create cn0::
+
+    ./vda_cli cn create --sock-addr 192.168.0.12:9820 \
+    --tr-type tcp --tr-addr 192.168.0.12 --adr-fam ipv4 --tr-svc-id 4430
+
+* Create cn1::
+
+    ./vda_cli cn create --sock-addr 192.168.0.13:9820 \
+    --tr-type tcp --tr-addr 192.168.0.13 --adr-fam ipv4 --tr-svc-id 4430
+
+* Create dn0::
+
+    ./vda_cli da create --da-name da0 --size-mb 512 --physical-size-mb 512 \
+    --cntlr-cnt 2 --strip-cnt 2 --strip-size-kb 64
+
+* Export dn0 to host0::
+
+    ./vda_cli exp create --da-name da0 --exp-name exp0a \
+    --initiator-nqn nqn.2016-06.io.spdk:host0
+
+* Get the NVMeOF information of exp0a::
+
+    ./vda_cli exp get --da-name da0 --exp-name exp0a
+
+  FIXME: exp get output
+
+* Create dn1::
+
+    ./vda_cli da create --da-name da1 --size-mb 1024 --physical-size-mb 1024 \
+    --cntlr-cnt 2 --strip-cnt 2 --strip-size-kb 64
+
+* Export da1 to host1::
+
+    ./vda_cli exp create --da-name da1 --exp-name exp1a \
+    --initiator-nqn nqn.2016-06.io.spdk:host1
+
+* Get the NVMeOF information of exp1a::
+
+    ./vda_cli exp get --da-name da1 --exp-name exp1a
+
+  FIXME: exp get output
+
+Connect to da0/exp0a from host0
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Login to host0 (192.168.0.14)
+
+* Make sure nvme-tcp kernel module is inserted::
+
+    sudo modprobe nvme-tcp
+
+* Make sure nvme-cli is installed, e.g. on ubutun system::
+
+    sudo apt install -y nvme-cli
+
+* Connect to the two cntlrs of dn0/exp0a::
+
+    FIXME
+
+* access the dn0/exp0a::
+
+    FIXME
+
+* disconnect from dn0/exp0a::
+
+    FIXME
+
+Connect to da1/exp1a from host1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Login to host1 (192.168.0.15)
+
+* Make sure nvme-tcp kernel module is inserted::
+
+    sudo modprobe nvme-tcp
+
+* Make sure nvme-cli is installed, e.g. on ubutun system::
+
+    sudo apt install -y nvme-cli
+
+* Connect to the two cntlrs of dn0/exp0a::
+
+    FIXME
+
+* access the dn0/exp0a::
+
+    FIXME
+
+* disconnect from dn0/exp0a::
+
+    FIXME
+
+Export dn0 to host1
+^^^^^^^^^^^^^^^^^^^
+Login to the cli server (192.168.0.21)
+
+* Delete the dn0/exp0a
+
+* Export dn0 to host1
+
+* Get the dn0/exp0b NVMeOF information
+
+Connect to da0/exp0b from host1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Login to host1 (192.168.0.15)
+
+Cleanup the environment
+^^^^^^^^^^^^^^^^^^^^^^^
+* Login to the cli server (192.168.0.21), run below commands
+
+* Login to dn0, dn1, cn0, cn1, run below commands
+
+* Login to 
