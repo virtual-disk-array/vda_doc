@@ -58,8 +58,7 @@ Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`
   ./configure
   make
 
-
-After build the spdk, we should setup the environment for spdk. We can
+After build the spdk, we should initialize the environment for spdk. We can
 use the ``scripts/setup.sh`` in the spdk directory. Here we specific
 8G hugepages::
 
@@ -72,9 +71,13 @@ Download and unzip the package.
 
 Launch dn0
 ^^^^^^^^^^
-Go to the spdk directory, run below commands::
+Go to the spdk directory and launch the spdk application::
 
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn0.sock --wait-for-rpc > /tmp/vda_data/dn0.log 2>&1 &
+
+Wait until the ``/tmp/vda_data/dn0.sock`` is created (1 or 2 seconds
+should be enough), then run below commands::
+
   sudo scripts/rpc.py -s /tmp/vda_data/dn0.sock bdev_set_options -d
   sudo scripts/rpc.py -s /tmp/vda_data/dn0.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
   sudo scripts/rpc.py -s /tmp/vda_data/dn0.sock framework_start_init
@@ -94,9 +97,13 @@ listen on 127.0.0.1:4420.
 
 Launch dn1
 ^^^^^^^^^^
-Go to the spdk directory, run below commands::
-
+Go to the spdk directory and launch the spdk application::
+  
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn1.sock --wait-for-rpc > /tmp/vda_data/dn1.log 2>&1 &
+
+Wait until the ``/tmp/vda_data/dn1.sock`` is created (1 or 2 seconds
+should be enough), then run below commands::
+
   sudo scripts/rpc.py -s /tmp/vda_data/dn1.sock bdev_set_options -d
   sudo scripts/rpc.py -s /tmp/vda_data/dn1.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
   sudo scripts/rpc.py -s /tmp/vda_data/dn1.sock framework_start_init
@@ -116,9 +123,13 @@ listen on 127.0.0.1:4421.
 
 Launch cn0
 ^^^^^^^^^^
-Go the the spdk directory, run below commands::
+Go to the spdk directory and launch the spdk application::
 
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn0.sock --wait-for-rpc > /tmp/vda_data/cn0.log 2>&1 &
+
+Wait until the ``/tmp/vda_data/cn0.sock`` is created (1 or 2 seconds
+should be enough), then run below commands::
+
   sudo scripts/rpc.py -s /tmp/vda_data/cn0.sock bdev_set_options -d
   sudo scripts/rpc.py -s /tmp/vda_data/cn0.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
   sudo scripts/rpc.py -s /tmp/vda_data/cn0.sock framework_start_init
@@ -138,9 +149,13 @@ listen on 127.0.0.1:4430.
 
 Launch cn1
 ^^^^^^^^^^
-Go the the spdk directory, run below commands::
+Go to the spdk directory and launch the spdk application::
 
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn1.sock --wait-for-rpc > /tmp/vda_data/cn1.log 2>&1 &
+
+Wait until the ``/tmp/vda_data/cn1.sock`` is created (1 or 2 seconds
+should be enough), then run below commands::
+
   sudo scripts/rpc.py -s /tmp/vda_data/cn1.sock bdev_set_options -d
   sudo scripts/rpc.py -s /tmp/vda_data/cn1.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
   sudo scripts/rpc.py -s /tmp/vda_data/cn1.sock framework_start_init
@@ -165,7 +180,6 @@ Run below command::
   ./vda_portal --portal-address '127.0.0.1:9520' --portal-network tcp \
   --etcd-endpoints localhost:2389 \
   > /tmp/vda_data/portal.log 2>&1 &
-
 
 Launch monitor
 ^^^^^^^^^^^^^^

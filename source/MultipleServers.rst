@@ -72,10 +72,17 @@ Login to the dn0 server (192.168.0.10).
     ./configure
     make
 
-* Go to the spdk directory and run below commands::
+* Initialize the spdk environment (run it once after every reboot)::
 
     sudo scripts/setup.sh
+
+* Go to the spdk directory and launch the spdk application::
+
     sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
+
+* Wait until the ``/tmp/vda_data/dn.sock`` is created (1 or 2 seconds
+  should be enough), then run below commands::
+
     sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
     sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
     sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
@@ -120,10 +127,17 @@ Login to the dn1 server (192.168.0.11).
     ./configure
     make
 
-* Go to the spdk directory and run below commands::
+* Initialize the spdk environment (run it once after every reboot)::
 
     sudo scripts/setup.sh
+
+* Go to the spdk directory and launch the spdk application::
+
     sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
+
+* Wait until the ``/tmp/vda_data/dn.sock`` is created (1 or 2 seconds
+  should be enough), then run below commands::
+
     sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
     sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
     sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
@@ -168,15 +182,22 @@ Login to the cn0 server (192.168.0.12).
     ./configure
     make
 
-* Go to the spdk directory and run below commands::
+* Initialize the spdk environment (run it once after every reboot)::
 
     sudo scripts/setup.sh
-    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
-    sudo chmod 777 /tmp/vda_data/dn.sock
+
+* Go to the spdk directory and launch the spdk application::
+
+    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn.sock --wait-for-rpc > /tmp/vda_data/cn.log 2>&1 &
+
+* Wait until the ``/tmp/vda_data/cn.sock`` is created (1 or 2 seconds
+  should be enough), then run below commands::
+
+    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock bdev_set_options -d
+    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
+    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_start_init
+    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_wait_init
+    sudo chmod 777 /tmp/vda_data/cn.sock
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
@@ -209,15 +230,22 @@ Login to the cn1 server (192.168.0.13).
     ./configure
     make
 
-* Go to the spdk directory and run below commands::
+* Initialize the spdk environment (run it once after every reboot)::
 
     sudo scripts/setup.sh
-    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
-    sudo chmod 777 /tmp/vda_data/dn.sock
+
+* Go to the spdk directory and launch the spdk application::
+
+    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn.sock --wait-for-rpc > /tmp/vda_data/cn.log 2>&1 &
+
+* Wait until the ``/tmp/vda_data/cn.sock`` is created (1 or 2 seconds
+  should be enough), then run below commands::
+
+    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock bdev_set_options -d
+    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
+    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_start_init
+    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_wait_init
+    sudo chmod 777 /tmp/vda_data/cn.sock
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.

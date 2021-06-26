@@ -48,6 +48,10 @@ Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`
   ./configure
   make
 
+Initialize the spdk environment (run it once after every reboot)::
+
+  sudo scripts/setup.sh
+
 Install vda
 ^^^^^^^^^^^
 Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
@@ -56,10 +60,13 @@ Download and unzip the package.
 Launch DN components
 ^^^^^^^^^^^^^^^^^^^^
 For each :ref:`DN <dn-label>`, we should run a spdk application and the dn_agent. First,
-go to the spdk directory and run below commands::
+go to the spdk directory and launch the spdk application::
 
-  sudo scripts/setup.sh  # only run it once after reboot
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
+
+Wait until the ``/tmp/vda_data/dn.sock`` is created (1 or 2 seconds
+should be enough), then run below commands::
+
   sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
   sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
   sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
@@ -100,10 +107,13 @@ can find below log::
 Launch CN components
 ^^^^^^^^^^^^^^^^^^^^
 For each :ref:`CN <cn-label>`, we should run a spdk applicaiton and the cn-agent. First,
-go to the spdk directory and run below commands::
+go to the spdk directory and launch the spdk application::
 
-  sudo scripts/setup.sh  # only run it once after reboot
   sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn.sock --wait-for-rpc > /tmp/vda_data/cn.log 2>&1 &
+
+Wait until the ``/tmp/vda_data/cn.sock`` is created (1 or 2 seconds
+should be enough), then run below commands::
+
   sudo scripts/rpc.py -s /tmp/vda_data/cn.sock bdev_set_options -d
   sudo scripts/rpc.py -s /tmp/vda_data/cn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
   sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_start_init
