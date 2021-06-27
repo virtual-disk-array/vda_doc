@@ -1,69 +1,79 @@
 monitor configuration
 =====================
+The monitor is used to manager all the :ref:`DNs <dn-label>` and :ref:`CNs <cn-label>`.
+Currently it has two kind of tasks:
+* Send heartbeat request to all the ref:`DNs <dn-label>` and :ref:`CNs <cn-label>`.
+  If any DN or CN can not response the heartbeat, it stores the DN/CN
+  to etcd to indicate it is failed. And it also performs failover for
+  the failed CN.
+* For each failed DN/CN, the monitor gets the DN/CN data from etcd,
+  and tries to syncup the data to the DN/CN. If it succeeds to syncup
+  the DN/CN, it will remove the DN/CN from the failed list.
+
+You can launch multiple monitors. Each monitor will work on a subset
+of DNs and CNs.
 
 command line parameters
 -----------------------
 
-\--listener
-^^^^^^^^^^^
-The grpc listen address. You may use 0.0.0.0 to let it listen on all
-address. Or use 127.0.0.1 to listen on the local address. Or a
-specific ip address to let it only listen on that address,
-e.g. 182.168.0.10. The default value is 127.0.0.1.
+--etcd-endpoints
+  The etcd endpoint list, splited by comma. E.g. ``localhost:2379``,
+  ``192.168.0.10:2379,192.168.0.11:2379,192.168.0.12:2379``. The default
+  value is localhost:2379.
 
-\--port
-^^^^^^^
-The grpc listen port. The default value is 9620.
+--dn-heartbeat-interval
+  The interval of sending heartbeat request to each DN. Its unit is
+  second. If set it to 0, the dn heartbeat will be disabled. The default
+  value is 5.
 
-\--max-workers
-^^^^^^^^^^^^^^
-It indicates how many concurrent workers the grpc server will have. The
-default value is 10.
+--dn-heartbeat-concurrency
+  How many goroutines will be launched for sending DN heartbeat
+  request. If you have many DNs, you should set it to a larger value (or
+  launch more monitors). If set it to 0, the dn heartbeat will be
+  disabled. The default value is 100.
 
-\--db-uri, \--db-uri-file, \--db-uri-stdin
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The above 3 parameters are exclusive with each other. You may choose
-one of them to set the database uri. The database uri will be pass to
-the sqlalchemy. Please refer the
-`sqlalchemy doc <https://docs.sqlalchemy.org/en/13/core/engines.html>`_
-for its format.
 
-* \--db-uri means set the db uri from the command line directly.
-* \--db-uri-file means read the db uri from a local file.
-* \--db-uri-stdin means read the db uri from stdin. Then the user should
-  write the db uri to the stdin of vda_portal.
+--dn-syncup-interval
+  The interval of sending syncup request to the failed DNs. Its unit is
+  second. If set it to 0, the dn syncup will be disabled. The default
+  value is 5.
 
-Below are several examples of the db uri.
+--dn-syncup-concurrency
+  How many goroutines will be launched for sending the syncup
+  request. If set it to 0, the dn syncup will be disabled. The default
+  value is 100.
 
-sqlite:
+--cn-heartbeat-interval
+  The interval of sending heartbeat request to each CN. Its unit is
+  second. If set it to 0, the cn heartbeat will be disabled. The default
+  value is 5.
 
-.. code-block:: none
+--cn-heartbeat-concurrency
+  How many goroutines will be launched for sending CN heartbeat
+  request. If you have many CNs, you should set it to a larger value (or
+  launch more monitors). If set it to 0, the cn heartbeat will be
+  disabled. The default value is 100.
 
-   sqlite:////tmp/vda.db
+--cn-syncup-interval
+  The interval of sending syncup request to the failed CNs. Its unit is
+  second. If set it to 0, the cn syncup will be disabled. The default
+  value is 5.
 
-postgresql:
+--cn-syncup-concurrency
+  How many goroutines will be launched for sending the syncup
+  request. If set it to 0, the cn syncup will be disabled. The default
+  value is 100.
 
-.. code-block:: none
+examples
+--------
 
-   postgresql://vda_user:vda_password@localhost:5432/vda_db
+* Connect to the etcd 192.168.0.10:2379, and use default values for all
+  other parameters::
 
-\--db-kwargs
-^^^^^^^^^^^^
-It is a json string which will be passed to the
-`create_engine function of sqlalchemy <https://docs.sqlalchemy.org/en/13/core/engines.html#sqlalchemy.create_engine>`_
-directly.
+    vda_monitor --etcd-endpoints 192.168.0.10:2379
 
-\--total, \--current
-^^^^^^^^^^^^^^^^^^^^
-The parameter 'total' means how many monitors totally, 'current' means
-the index of this monitor. These two parameters are used to distribute
-workload to multiple monitors. E.g.
+* Connet to the etcd cluster 192.168.0.10:2379, 192.168.0.11:2379 and
+  192.168.0.12:2379, Set dn heartbeat interval to 10 second::
 
-- There is only one monitor and set "--total 1 --current 0". This
-  monitor will work for the whole cluster.
-- There are two monitors, set "--total 2 --current 0" for monitor0,
-  set "--total 2 --current 1" for monitor1. Then both monitor0 and
-  monitor1 will work on half of the cluster.
-- There are two monitors, set "--total 1 --current 0" for both of
-  monitor0 and monitor1. Both of the two monitors will work on the
-  whole cluster. They could be backup for each other.
+    vda_monitor --etcd-endpoints 192.168.0.10:2379,192.168.0.11:2379,192.168.0.12:2379 --dn-heartbeat-interval 10
+    

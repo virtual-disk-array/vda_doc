@@ -11,7 +11,7 @@ arrays. The virtual disk array looks like a traditional disk array,
 which has one or multiple controllers and several disks. The user can
 set raid level, encryption or other features to the disk array
 (currently, only raid0 is supported). In VDA, all the controllers and
-disks are SPDK applications. They are connected by NVMeOF. The typical
+disks are SPDK applications. They are connected by NVMeOF. A typical
 usage of VDA is as persistent volumes for kubernets.
 
 .. image:: /images/vda_cluster_arch.png

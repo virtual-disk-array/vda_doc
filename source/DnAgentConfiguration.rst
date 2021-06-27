@@ -1,56 +1,61 @@
 dn agent configuration
 ======================
+The dn agent is a GRPC server. It runs on the :ref:`DN <dn-label>`. It
+receives the DN configuration from :ref:`portal <portal-label>` and
+:ref:`monitor <monitor-labe>`, then apply the configuration to the
+spdk application.
 
 command line parameters
 -----------------------
 
-\--listener
-^^^^^^^^^^^
-The grpc listen address. You may use 0.0.0.0 to let it listen on all
-address. Or use 127.0.0.1 to listen on the local address. Or a
-specific ip address to let it only listen on that address,
-e.g. 182.168.0.10. The default value is 127.0.0.1.
+--network
+  It will be used as the ``network`` parameter of the golang
+  `net.Listen <https://golang.org/pkg/net/#Listen>`_ function. The
+  allowed values are "tcp", "tcp4", "tcp6", "unix" or "unixpacket". The
+  default value is "tcp".
 
-\--port
-^^^^^^^
-The grpc listen port. The default value is 9720.
+--address
+  It will be used as the ``address`` parameter of the golang
+  `net.Listen <https://golang.org/pkg/net/#Listen>`_ function. The
+  default value is :9720.
 
-\--max-workers
-^^^^^^^^^^^^^^
-It indicates how many concurrent workers the grpc server will have. The
-default value is 10.
+--sock-path
+  The spdk application socket path. When you launch the spdk
+  application, you may set the socket path var the ``--rpc-socket``
+  parameter. Then you should provide the same path here. The dn agent
+  will communicate with the spdk application via the socket path. The
+  default value is "/var/tmp/spdk.sock", which is also the default value
+  of the spdk application. For more details about the spdk application
+  ``-rpc-socket`` parameter, please refer
+  https://spdk.io/doc/app_overview.html .
 
-\--sock-path
-^^^^^^^^^^^^
-The spdk application socket path. The default value is
-/var/tmp/spdk.sock, which is the spdk application default sock path
-too.
+--sock-timeout
+  The timeout in second when communicate with the spdk application. The
+  default value is 10.
 
-\--sock-timeout
-^^^^^^^^^^^^^^^
-The timeout (in second) between the dn_agent and the spdk
-application. The default value is 60.
+--tr-conf
+  This is a json string, will be passed to the spdk
+  ``nvmf_create_transport`` rpc during the dn agent initialize
+  stage.  Please refer the ``nvmf_create_transport`` rpc in the
+  `spdk rpc document <https://spdk.io/doc/jsonrpc.html>` for more
+  details. The default value is '{"trtype":"TCP"}'.
 
-\--transport-conf
-^^^^^^^^^^^^^^^^^
-This parameter is a json string. It will be passed to the
-nvmf_create_transport API of spdk. The default value is
-'{"trtype":"TCP"}',  which means it will create a TCP transport by
-default.
 
-\--listener-conf
-^^^^^^^^^^^^^^^^
-This parameter is a json string. It will be passed to the
-nvmf_subsystem_add_listener API of spdk.The default value is
-'{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}'
+--lis-conf
+  This is a json string, When the dn agent creates a :ref:`VD <vd-label>`,
+  this json string will be passed to the ``listen_address``
+  parameter of the spdk ``nvmf_subsystem_add_listener`` rpc. Please
+  refer the ``nvmf_subsystem_add_listener`` rpc in the
+  `spdk rpc document <https://spdk.io/doc/jsonrpc.html>` for more
+  details. The default value is
+  '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}'.
 
-\--local-store
-^^^^^^^^^^^^^^
-A local file path to store the configuration data of this node. The
-VDA cluster sync up configuration data from the database to all the
-disk nodes and controller nodes. Each node only gets its own
-configuration data. If this parameter is set, the node will store the
-configuration data to a local file. When it restarts, it can read the
-the configuration data from the local file. Then it will be available
-quickly.
+examples
+--------
+
+* Let the dn agent listen on tcp port 9720. Set TCP transport max
+  queue size to 64, and let the NVMeOF listen on the ip address
+  192.168.0.20::
+
+    vda_dn_agent --network tcp --address ':9720' --tr-conf '{"trtype":"TCP","max_queue_depth":64}' --lis-conf '{"trtype":"tcp","traddr":"192.168.0.20","adrfam":"ipv4","trsvcid":"4420"}'
 
