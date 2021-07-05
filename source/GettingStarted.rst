@@ -8,3 +8,4 @@ Getting started
    MinimalDeployment
    MultipleComponentsInOneServer
    MultipleServers
+   WorkWithKubernetes

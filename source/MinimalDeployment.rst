@@ -1,3 +1,5 @@
+.. _minimal-deployment-label:
+
 Minimal Deployment
 ==================
 
@@ -232,7 +234,7 @@ Create DA
 We have create a :ref:`DN <dn-label>`, a :ref:`CN <cn-label>` and a
 :ref:`PD <pd-label>` in the :ref:`DN <dn-label>`. Now we can create a
 :ref:`DA <da-label>`. The :ref:`DA <da-label>` will allocate a
-:ref:`VD <vd-label` from the `PD <pd-label>`, and allocate a
+:ref:`VD <vd-label>` from the `PD <pd-label>`, and allocate a
 :ref:`cntlr <cntlr-label>` from the :ref:`CN <cn-label>`::
 
   ./vda_cli da create --da-name da0 --size-mb 64 --physical-size-mb 64 \

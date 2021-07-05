@@ -193,7 +193,8 @@ Create DNs, PDs and CNs
 Create dn0::
   
   ./vda_cli dn create --sock-addr localhost:9720 \
-  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4420
+  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4420 \
+  --location localhost:9720
 
 Create pd0 on dn0::
 
@@ -204,13 +205,21 @@ Create pd0 on dn0::
 Create dn1::
 
   ./vda_cli dn create --sock-addr localhost:9721 \
-  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4421
+  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4421 \
+  --location localhost:9721
 
 Create pd1 on dn1::
 
   dd if=/dev/zero of=/tmp/vda_data/pd1.img bs=1M count=512
   ./vda_cli pd create --sock-addr localhost:9721 --pd-name pd1 \
   --bdev-type-key aio --bdev-type-value /tmp/vda_data/pd1.img
+
+When we create dn0 and dn1, we use the ``--location`` option. The
+location is a string. When the VDA allocate :ref:`VDs <vd-label>`
+across multiple :ref:`DNs <dn-label>`, it will make sure no two DNs
+has the same location. It will make sure the the :ref:`DA <da-label>`
+is constructed by multiple DNs. If we omit the ``--location``, it
+means this DN can go together with any other DN.
 
 In previous tutorial, we use malloc bdev as pd. Here we use aio bdev
 as pd0 and pd1. The aio bdev is also used as test purpose. You could
@@ -222,12 +231,17 @@ here we use different name for avoid confusing.
 Create cn0::
 
   ./vda_cli cn create --sock-addr localhost:9820 \
-  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4430
+  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4430 \
+  --location localhost:9820
 
 Create cn1::
 
   ./vda_cli cn create --sock-addr localhost:9821 \
-  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4431
+  --tr-type tcp --tr-addr 127.0.0.1 --adr-fam ipv4 --tr-svc-id 4431 \
+  --location localhost:9821
+
+Similar as dn0 and da1, we use the ``--location`` to make sure we
+won't allocate two :ref:`cntlrs <cntlr-label>` from the same :ref:`CN <cn-label>`.
 
 Create da0
 ^^^^^^^^^^
