@@ -14,7 +14,7 @@ Create a DN.
 \--sock-addr (string, required)
   The socket address of the DN. The socket address will be used to
   send GRPC to the DN. It is also used as the unique identifier of the
-  DN. E.g. ``localhost:9720`` , ``192.168.0.10:9720``. 
+  DN. E.g. ``localhost:9720`` , ``192.168.0.10:9720``.
 \--description (string, optional)
   A string to describe the DN.
 \--tr-type (string, required)
@@ -162,6 +162,7 @@ The ``vda_cli cn`` sub-command is used to manage the :ref:`CN <cn-label>`.
 vda_cli cn create
 ^^^^^^^^^^^^^^^^^
 Create a CN
+
 \--sock-addr (string)
   The  socket address of the CN. The socket address will be used to
   send GRPC to the CN. It is also used as the unique identifier of the

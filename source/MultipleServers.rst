@@ -119,16 +119,17 @@ Login to the dn1 server (192.168.1.11).
 
     mkdir -p /tmp/vda_data
 
-* Install spdk
-  Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
-  ::
-    cd ~
-    git clone https://github.com/spdk/spdk
-    cd spdk
-    git submodule update --init
-    sudo scripts/pkgdep.sh
-    ./configure
-    make
+* Install spdk.
+    Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
+    ::
+
+       cd ~
+       git clone https://github.com/spdk/spdk
+       cd spdk
+       git submodule update --init
+       sudo scripts/pkgdep.sh
+       ./configure
+       make
 
 * Initialize the spdk environment (run it once after every reboot)::
 
@@ -179,13 +180,14 @@ Login to the cn0 server (192.168.1.12).
 * Install spdk
   Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
   ::
-    cd ~
-    git clone https://github.com/spdk/spdk
-    cd spdk
-    git submodule update --init
-    sudo scripts/pkgdep.sh
-    ./configure
-    make
+
+     cd ~
+     git clone https://github.com/spdk/spdk
+     cd spdk
+     git submodule update --init
+     sudo scripts/pkgdep.sh
+     ./configure
+     make
 
 * Initialize the spdk environment (run it once after every reboot)::
 
@@ -227,13 +229,14 @@ Login to the cn1 server (192.168.1.13).
 * Install spdk
   Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
   ::
-    cd ~
-    git clone https://github.com/spdk/spdk
-    cd spdk
-    git submodule update --init
-    sudo scripts/pkgdep.sh
-    ./configure
-    make
+
+     cd ~
+     git clone https://github.com/spdk/spdk
+     cd spdk
+     git submodule update --init
+     sudo scripts/pkgdep.sh
+     ./configure
+     make
 
 * Initialize the spdk environment (run it once after every reboot)::
 

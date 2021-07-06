@@ -23,8 +23,10 @@ But there is an important different: In the :ref:`Minimal Deployment <minimal-de
 all the vda components allow local connections (connect from localhost
 or 127.0.0.1) only. In this guide, the vda cluster should allow two
 kind of exteranl connections from the kubernetes server:
+
 * the gRPC to :ref:`portal <portal-label>`,
   for creating/deleting :ref:`DA <da-label>` and :ref:`EXP <exp-label>`
+
 * the NVMeOF to :ref:`cntlr <cntlr-label>`, for attaching/detaching volume(s)
 
 For simplify the steps, we let all the VDA compoents allow exteranl
@@ -101,7 +103,7 @@ Launch :ref:`CN <cn-label>`
 
     sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn.sock --wait-for-rpc > /tmp/vda_data/cn.log 2>&1 &
 
-* Wait until the ``/tmp/vda_data/cn.sock is created, then run below commands::
+* Wait until the ``/tmp/vda_data/cn.sock`` is created, then run below commands::
 
     sudo scripts/rpc.py -s /tmp/vda_data/cn.sock bdev_set_options -d
     sudo scripts/rpc.py -s /tmp/vda_data/cn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100

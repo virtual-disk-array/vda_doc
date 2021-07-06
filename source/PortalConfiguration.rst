@@ -8,18 +8,18 @@ etcd and syncup the data to each related :ref:`DN <dn-label>` and each
 command line parameters
 -----------------------
 
---etcd-endpoints
+\--etcd-endpoints
   The etcd endpoint list, splited by comma. E.g. ``localhost:2379``,
   ``192.168.0.10:2379,192.168.0.11:2379,192.168.0.12:2379``. The default
   value is localhost:2379.
 
---portal-network
+\--portal-network
   It will be used as the ``network`` parameter of the golang
   `net.Listen <https://golang.org/pkg/net/#Listen>`_ function. The
   allowed values are "tcp", "tcp4", "tcp6", "unix" or "unixpacket". The
   default value is "tcp".
 
---portal-address
+\--portal-address
   It will be used as the ``address`` parameter of the golang
   `net.Listen <https://golang.org/pkg/net/#Listen>`_ function. The
   default value is :9520.

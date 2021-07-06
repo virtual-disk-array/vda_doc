@@ -2,24 +2,24 @@ dn agent configuration
 ======================
 The dn agent is a GRPC server. It runs on the :ref:`DN <dn-label>`. It
 receives the DN configuration from :ref:`portal <portal-label>` and
-:ref:`monitor <monitor-labe>`, then apply the configuration to the
+:ref:`monitor <monitor-label>`, then apply the configuration to the
 spdk application.
 
 command line parameters
 -----------------------
 
---network
+\--network
   It will be used as the ``network`` parameter of the golang
   `net.Listen <https://golang.org/pkg/net/#Listen>`_ function. The
   allowed values are "tcp", "tcp4", "tcp6", "unix" or "unixpacket". The
   default value is "tcp".
 
---address
+\--address
   It will be used as the ``address`` parameter of the golang
   `net.Listen <https://golang.org/pkg/net/#Listen>`_ function. The
   default value is :9720.
 
---sock-path
+\--sock-path
   The spdk application socket path. When you launch the spdk
   application, you may set the socket path var the ``--rpc-socket``
   parameter. Then you should provide the same path here. The dn agent
@@ -29,11 +29,11 @@ command line parameters
   ``-rpc-socket`` parameter, please refer
   https://spdk.io/doc/app_overview.html .
 
---sock-timeout
+\--sock-timeout
   The timeout in second when communicate with the spdk application. The
   default value is 10.
 
---tr-conf
+\--tr-conf
   This is a json string, will be passed to the spdk
   ``nvmf_create_transport`` rpc during the dn agent initialize
   stage.  Please refer the ``nvmf_create_transport`` rpc in the
@@ -41,7 +41,7 @@ command line parameters
   details. The default value is '{"trtype":"TCP"}'.
 
 
---lis-conf
+\--lis-conf
   This is a json string, When the dn agent creates a :ref:`VD <vd-label>`,
   this json string will be passed to the ``listen_address``
   parameter of the spdk ``nvmf_subsystem_add_listener`` rpc. Please
