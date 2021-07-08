@@ -137,8 +137,8 @@ Go to the vda directory, run below command::
   ./vda_monitor --etcd-endpoints 192.168.1.30:2389 \
    > /tmp/vda_data/monitor.log 2>&1 &
 
-Create :ref:`DN <dn-label>`, :ref:`PD <pd-label>` and `CN <cn-label>`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Create :ref:`DN <dn-label>`, :ref:`PD <pd-label>` and :ref:`CN <cn-label>`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Create DN::
 
     ./vda_cli dn create --sock-addr 192.168.1.30:9720 \
@@ -230,15 +230,13 @@ running::
 Wait until all the ``READY`` become ``1/1``::
 
   NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE
-  kube-system   coredns-74ff55c5b-mjjbz                   1/1     Running   0          2m15s
-  kube-system   etcd-ip-192-168-1-31                      1/1     Running   0          2m29s
-  kube-system   kube-apiserver-ip-192-168-1-31            1/1     Running   0          2m30s
-  kube-system   kube-controller-manager-ip-192-168-1-31   1/1     Running   0          2m30s
-  kube-system   kube-proxy-m84js                          1/1     Running   0          2m15s
-  kube-system   kube-scheduler-ip-192-168-1-31            1/1     Running   0          2m30s
-  kube-system   storage-provisioner                       1/1     Running   1          2m29s
-
-
+  kube-system   coredns-74ff55c5b-fdv88                   1/1     Running   0          111s
+  kube-system   etcd-ip-192-168-1-31                      1/1     Running   0          2m6s
+  kube-system   kube-apiserver-ip-192-168-1-31            1/1     Running   0          2m6s
+  kube-system   kube-controller-manager-ip-192-168-1-31   1/1     Running   0          2m6s
+  kube-system   kube-proxy-ddzg4                          1/1     Running   0          111s
+  kube-system   kube-scheduler-ip-192-168-1-31            1/1     Running   0          2m6s
+  kube-system   storage-provisioner                       1/1     Running   1          2m5s
 
 Create sidecars
 ^^^^^^^^^^^^^^^
@@ -279,8 +277,8 @@ Get the status of the controller and node::
 Make sure the ``READY`` of controller and node become ``3/3`` and ``2/2``::
 
   NAME                  READY   STATUS    RESTARTS   AGE
-  vdacsi-controller-0   3/3     Running   0          28s
-  vdacsi-node-hcwzk     2/2     Running   0          28s
+  vdacsi-controller-0   3/3     Running   0          17s
+  vdacsi-node-rng9x     2/2     Running   0          17s
 
 Operate against the kubernetes
 ------------------------------
@@ -301,18 +299,12 @@ Apply the Pod file ::
 
 Wait for a while, run below command to get the status of the testpod::
 
-  FIXME
+  minikube kubectl -- get pods vdacsi-test
 
 You would get similar output as below::
 
-  FIXME
-
-Troubleshooting
-^^^^^^^^^^^^^^^
-If you get any error in the above steps, you may check the log to find
-what the problem is.
-
-
+  NAME          READY   STATUS    RESTARTS   AGE
+  vdacsi-test   1/1     Running   0          55s
 
 Cleanup
 -------
