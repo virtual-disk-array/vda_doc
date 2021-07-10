@@ -5,17 +5,15 @@ Overview
 --------
 
 `VDA <https://github.com/virtual-disk-array/vda>`_ (Virtual Disk Array)
-is a block storage service (similar as AWS EBS or Ceph block
+is an open source block storage system (similar as AWS EBS or Ceph block
 device). It could be used as
 `persistent volumes <https://kubernetes.io/docs/concepts/storage/persistent-volumes/>`_
 in kubernetes. A blocke device in VDA looks like a traditional disk
 array, which has one or more controllers and several disks. When a
 disk array is created, the user can specify a set of disk array
-features. Currently, only raid0 is support. In the future, it would
-support other raid levels and other features like snapshot or
-encryption. The VDA uses SPDK as data plane. In VDA, all the
-controllers and disks are spdk applications. They are connected by
-NVMeOF.
+features (e.g. raid, snapshot, encryption). Currently, only raid0 is
+support.  The VDA uses SPDK as data plane. In VDA, all the controllers
+and disks are spdk applications. They are connected by NVMeOF.
 
 .. image:: /images/vda_cluster_arch.png
 
