@@ -25,16 +25,19 @@ logs, etcd data) to this directory. ::
 
 Install and launch etcd
 ^^^^^^^^^^^^^^^^^^^^^^^
-Follow the `install guide <https://etcd.io/docs/v3.4/install/>`_ to
-install etcd. ::
+Follow the `official install guide <https://etcd.io/docs/latest/install/>`_
+to install etcd. The easy way is to download the pre-built
+binaries. You can open the
+`latest release page <https://github.com/etcd-io/etcd/releases/latest>`,
+and find the binaries for your OS and arch. In this doc, the latest
+version is v3.5.0 and we choose the linux-amd64 one::
 
-  cd ~
-  curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.4.16/etcd-v3.4.16-linux-amd64.tar.gz
-  tar xvf etcd-v3.4.16-linux-amd64.tar.gz
+  curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz
+  tar xvf etcd-v3.5.0-linux-amd64.tar.gz
 
-Go to the etcd directory and run below command::
+Go to the etcd directory and launch it::
 
-  cd etcd-v3.4.16-linux-amd64
+  cd etcd-v3.5.0-linux-amd64
   ./etcd --listen-client-urls http://localhost:2389 \
   --advertise-client-urls http://localhost:2389 \
   --listen-peer-urls http://localhost:2390 \
@@ -50,7 +53,6 @@ Install spdk
 Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
 ::
 
-  cd ~
   git clone https://github.com/spdk/spdk
   cd spdk
   git submodule update --init
@@ -64,10 +66,17 @@ use the ``scripts/setup.sh`` in the spdk directory. Here we specific
 
   sudo HUGEMEM=8192 scripts/setup.sh
 
+We will launch multiple spdk applications in this server, the default
+2G hugepages is not enough. So we set it to 8G.
+
 Install vda
 ^^^^^^^^^^^
 Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-Download and unzip the package.
+Download and unzip the package. In this doc, the latest version is
+v0.1.0::
+
+  curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+  unzip vda_linux_amd64_v0.1.0.zip
 
 Launch dn0
 ^^^^^^^^^^
@@ -84,7 +93,7 @@ should be enough), then run below commands::
   sudo scripts/rpc.py -s /tmp/vda_data/dn0.sock framework_wait_init
   sudo chmod 777 /tmp/vda_data/dn0.sock
 
-Then go to the vda directory, run below commands::
+Then go to the vda binary directory (vda_linux_amd64_v0.1.0), run below commands::
 
   ./vda_dn_agent --network tcp --address '127.0.0.1:9720' \
   --sock-path /tmp/vda_data/dn0.sock --sock-timeout 10 \
@@ -110,7 +119,7 @@ should be enough), then run below commands::
   sudo scripts/rpc.py -s /tmp/vda_data/dn1.sock framework_wait_init
   sudo chmod 777 /tmp/vda_data/dn1.sock
 
-Then go to the vda directory, run below commands::
+Then go to the vda binary directory (vda_linux_amd64_v0.1.0), run below commands::
 
   ./vda_dn_agent --network tcp --address '127.0.0.1:9721' \
   --sock-path /tmp/vda_data/dn1.sock --sock-timeout 10 \
@@ -136,7 +145,7 @@ should be enough), then run below commands::
   sudo scripts/rpc.py -s /tmp/vda_data/cn0.sock framework_wait_init
   sudo chmod 777 /tmp/vda_data/cn0.sock
 
-Then go to the vda directory, run below commands::
+Then go to the vda binary directory (vda_linux_amd64_v0.1.0), run below commands::
 
   ./vda_cn_agent --network tcp --address '127.0.0.1:9820' \
   --sock-path /tmp/vda_data/cn0.sock --sock-timeout 10 \
@@ -162,7 +171,7 @@ should be enough), then run below commands::
   sudo scripts/rpc.py -s /tmp/vda_data/cn1.sock framework_wait_init
   sudo chmod 777 /tmp/vda_data/cn1.sock
 
-Then go to the vda directory, run below commands::
+Then go to the vda binary directory (vda_linux_amd64_v0.1.0), run below commands::
 
   ./vda_cn_agent --network tcp --address '127.0.0.1:9821' \
   --sock-path /tmp/vda_data/cn1.sock --sock-timeout 10 \
@@ -175,7 +184,7 @@ listen on 127.0.0.1:4431.
 
 Launch portal
 ^^^^^^^^^^^^^
-Run below command::
+Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
 
   ./vda_portal --portal-address '127.0.0.1:9520' --portal-network tcp \
   --etcd-endpoints localhost:2389 \
@@ -183,7 +192,7 @@ Run below command::
 
 Launch monitor
 ^^^^^^^^^^^^^^
-Run below command::
+Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
 
   ./vda_monitor --etcd-endpoints localhost:2389 \
   > /tmp/vda_data/monitor.log 2>&1 &

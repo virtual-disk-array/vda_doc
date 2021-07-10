@@ -25,7 +25,7 @@ Below are the ip address of each components:
 * 192.168.1.21 cli
 
 Here we only deploy a single etcd server. We could deploy multiple
-etcd servers, please refer the `etcd cluster guide <https://etcd.io/docs/v3.4/op-guide/clustering/>`_.
+etcd servers, please refer the `etcd cluster guide <https://etcd.io/docs/latest/op-guide/clustering/>`_.
 But the etcd cluster is out of the scope of this guide. So here we
 only deploy a single etcd for demo.
 
@@ -37,16 +37,15 @@ Login to the etcd server (192.168.1.16).
 
     mkdir -p /tmp/vda_data
 
-* Follow the `install guide <https://etcd.io/docs/v3.4/install/>`_ to
+* Follow the `official install guide <https://etcd.io/docs/latest/install/>`_ to
   install etcd::
 
-    cd ~
-    curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.4.16/etcd-v3.4.16-linux-amd64.tar.gz
-    tar xvf etcd-v3.4.16-linux-amd64.tar.gz
+    curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz
+    tar xvf etcd-v3.5.0-linux-amd64.tar.gz
 
-* Go to the etcd directory and run below command::
+* Go to the etcd directory and launch it::
 
-    cd etcd-v3.4.16-linux-amd64
+    cd etcd-v3.5.0-linux-amd64
     ./etcd --listen-client-urls http://192.168.1.16:2389 \
     --advertise-client-urls http://192.168.1.16:2389 \
     --listen-peer-urls http://192.168.1.16:2390 \
@@ -65,7 +64,6 @@ Login to the dn0 server (192.168.1.10).
   Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
   ::
      
-     cd ~
      git clone https://github.com/spdk/spdk
      cd spdk
      git submodule update --init
@@ -92,9 +90,13 @@ Login to the dn0 server (192.168.1.10).
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package.
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
 
-* Go to the vda directory, launch `vda_dn_agent`::
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
+
+* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_dn_agent`::
 
     ./vda_dn_agent --network tcp --address '192.168.1.10:9720' \
     --sock-path /tmp/vda_data/dn.sock --sock-timeout 10 \
@@ -150,9 +152,13 @@ Login to the dn1 server (192.168.1.11).
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package.
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
 
-* Go to the vda directory, launch `vda_dn_agent`::
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
+
+* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_dn_agent`::
 
     ./vda_dn_agent --network tcp --address '192.168.1.11:9720' \
     --sock-path /tmp/vda_data/dn.sock --sock-timeout 10 \
@@ -208,9 +214,13 @@ Login to the cn0 server (192.168.1.12).
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package.
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
 
-* Go to the vda directory, launch `vda_cn_agent`::
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
+
+* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_cn_agent`::
 
     ./vda_cn_agent --network tcp --address '192.168.1.12:9820' \
     --sock-path /tmp/vda_data/cn.sock --sock-timeout 10 \
@@ -257,9 +267,13 @@ Login to the cn1 server (192.168.1.13).
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package.
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
 
-* Go to the vda directory, launch `vda_cn_agent`::
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
+
+* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_cn_agent`::
 
     ./vda_cn_agent --network tcp --address '192.168.1.13:9820' \
     --sock-path /tmp/vda_data/cn.sock --sock-timeout 10 \
@@ -277,9 +291,13 @@ Login to the portal0 server (192.168.1.17).
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package.
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
 
-* Go to the vda directory, launch `vda_portal`::
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
+
+* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_portal`::
 
     ./vda_portal --portal-address '192.168.1.17:9520' --portal-network tcp \
     --etcd-endpoints 192.168.1.16:2389 \
@@ -295,9 +313,13 @@ Login to the portal1 server (192.168.1.18).
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package.
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
 
-* Go to the vda directory, launch `vda_portal`::
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
+
+* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_portal`::
 
     ./vda_portal --portal-address '192.168.1.18:9520' --portal-network tcp \
     --etcd-endpoints 192.168.1.16:2389 \
@@ -313,9 +335,13 @@ Login to the monitor0 server (192.168.1.19).
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package.
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
 
-* Go to the vda directory, launch `vda_monitor`::
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
+
+* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_monitor`::
 
     ./vda_monitor --etcd-endpoints 192.168.1.16:2389 \
     > /tmp/vda_data/monitor.log 2>&1 &
@@ -330,9 +356,13 @@ Login to the monitor0 server (192.168.1.20).
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package.
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
 
-* Go to the vda directory, launch `vda_monitor`::
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
+
+* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_monitor`::
 
     ./vda_monitor --etcd-endpoints 192.168.1.16:2389 \
     > /tmp/vda_data/monitor.log 2>&1 &
@@ -343,7 +373,11 @@ Login to the cli server (192.168.1.21)
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package. Then go to the vda directory.
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
+
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
 
 * Create dn0::
 

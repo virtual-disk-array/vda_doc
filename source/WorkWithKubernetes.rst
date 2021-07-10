@@ -20,7 +20,6 @@ Deploy VDA
 ----------
 Login to the vda cluster server (192.168.1.31).
 
-
 The steps are similar as the :ref:`Minimal Deployment <minimal-deployment-label>`.
 But there is an important different: In the :ref:`Minimal Deployment <minimal-deployment-label>`,
 all the vda components allow local connections (connect from localhost
@@ -44,12 +43,11 @@ Prepare
 
 * Install etcd::
 
-    curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.4.16/etcd-v3.4.16-linux-amd64.tar.gz
-    tar xvf etcd-v3.4.16-linux-amd64.tar.gz
+    curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz
+    tar xvf etcd-v3.5.0-linux-amd64.tar.gz
 
 * Install spdk, follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_::
 
-    cd ~
     git clone https://github.com/spdk/spdk
     cd spdk
     git submodule update --init
@@ -61,8 +59,12 @@ Prepare
 
     sudo HUGEMEM=8192 scripts/setup.sh
 
-* Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
-  Download and unzip the package.
+* Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_. 
+  Download and unzip the package. In this doc, the latest version is
+  v0.1.0::
+
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
+    unzip vda_linux_amd64_v0.1.0.zip
 
 Launch etcd
 ^^^^^^^^^^^
@@ -90,7 +92,7 @@ Launch :ref:`DN <dn-label>`
     sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
     sudo chmod 777 /tmp/vda_data/dn.sock
 
-* Go to the vda directory, run below command::
+* Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
 
     ./vda_dn_agent --network tcp --address '192.168.1.30:9720' \
     --sock-path /tmp/vda_data/dn.sock --sock-timeout 10 \
@@ -114,7 +116,7 @@ Launch :ref:`CN <cn-label>`
     sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_wait_init
     sudo chmod 777 /tmp/vda_data/cn.sock
 
-* Go the the vda directory, run below command::
+* Go the the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
 
     ./vda_cn_agent --network tcp --address '192.168.1.30:9820' \
     --sock-path /tmp/vda_data/cn.sock --sock-timeout 10 \
@@ -124,7 +126,7 @@ Launch :ref:`CN <cn-label>`
 
 Launch :ref:`portal <portal-label>`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Go to the vda directory, run below command::
+Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
 
   ./vda_portal --portal-address '192.168.1.30:9520' --portal-network tcp \
    --etcd-endpoints 192.168.1.30:2389 \
@@ -132,7 +134,7 @@ Go to the vda directory, run below command::
 
 Launch :ref:`monitor <monitor-label>`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Go to the vda directory, run below command::
+Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
 
   ./vda_monitor --etcd-endpoints 192.168.1.30:2389 \
    > /tmp/vda_data/monitor.log 2>&1 &
