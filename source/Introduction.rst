@@ -12,8 +12,10 @@ in kubernetes. A blocke device in VDA looks like a traditional disk
 array, which has one or more controllers and several disks. When a
 disk array is created, the user can specify a set of disk array
 features (e.g. raid, snapshot, encryption). Currently, only raid0 is
-support.  The VDA uses SPDK as data plane. In VDA, all the controllers
-and disks are spdk applications. They are connected by NVMeOF.
+support.  To get a high performance, the VDA uses
+`SPDK <https://spdk.io/doc/about.html>`_
+as dataplane. In VDA, all the controllers and disks are spdk
+applications. They are connected by NVMeOF.
 
 .. image:: /images/vda_cluster_arch.png
 
