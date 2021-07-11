@@ -29,6 +29,10 @@ etcd servers, please refer the `etcd cluster guide <https://etcd.io/docs/latest/
 But the etcd cluster is out of the scope of this guide. So here we
 only deploy a single etcd for demo.
 
+.. note:: In this guide, all the servers are ubuntu20.04
+   systems. But you could depploy them to any linux
+   x86_86 system.
+
 Launch etcd
 ^^^^^^^^^^^
 Login to the etcd server (192.168.1.16).

@@ -16,6 +16,10 @@ the vda components to another server.
 * kubernetes cluster server ip: 192.168.1.30
 * vda cluster server ip: 192.168.1.31
 
+.. note:: In this guide, both the kubernetes clusters server and the
+   vda cluster server are ubuntu20.04 systems. But you could deploy
+   them to any linux x86_64 system.
+
 Deploy VDA
 ----------
 Login to the vda cluster server (192.168.1.31).
@@ -169,9 +173,10 @@ Login to the kubernetes cluster server (192.168.1.30).
 
 Prepare
 ^^^^^^^
-Insert nvme-tcp::
+Insert nvme-tcp and install nvme-cli::
 
   sudo modprobe nvme-tcp
+  sudo apt install -y nvme-cli
 
 Install and run minikube
 ^^^^^^^^^^^^^^^^^^^^^^^^

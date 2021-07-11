@@ -16,6 +16,9 @@ applications. All of their NVMeOF targets should listen on different
 port. To deploy these spdk applications, the server should have at
 least 8G hugepages.
 
+.. note:: In this guide, we deploy the VDA components to a ubuntu20.04
+   system. But you could depploy them to any linux x86_86 system.
+
 Create a work directory
 ^^^^^^^^^^^^^^^^^^^^^^^
 Here we create a directory. We will store all the data (e.g. sockets,
