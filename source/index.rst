@@ -14,6 +14,7 @@ Welcome to vda's documentation!
    GettingStarted
    Configuration
    CLI
+   DevelopmentEnvironment
 
 
 Indices and tables
