@@ -9,13 +9,13 @@ is an open source block storage system (similar as AWS EBS or Ceph block
 device). It could be used as
 `persistent volumes <https://kubernetes.io/docs/concepts/storage/persistent-volumes/>`_
 in kubernetes. A blocke device in VDA looks like a traditional disk
-array, which has one or more controllers and several disks. When a
-disk array is created, the user can specify a set of disk array
-features (e.g. raid, snapshot, encryption). Currently, only raid0 is
-support.  To get a high performance, the VDA uses
+array, which has one or more controllers and several disks. users can
+configure disk array features like snapshot, encryption, and raid
+(only raid0 currently). To get a high performance, the VDA uses
 `SPDK <https://spdk.io/doc/about.html>`_
 as dataplane. In VDA, all the controllers and disks are spdk
-applications. They are connected by NVMeOF.
+applications. They are connected by
+`NVMeOF <https://nvmexpress.org/developers/nvme-of-specification/>`_ .
 
 .. image:: /images/vda_cluster_arch.png
 
@@ -34,11 +34,11 @@ resources.
 
 etcd
 ^^^^
-The `etcd <https://etcd.io/>`_ cluster is used to stores all the data
-and statements. E.g., it stores the configuration of the virtual disk
-arrays, the disk node / controller node status. It is also used as a
-coordinator. Multiple monitors register themselves to the etcd and
-then they can arrange their tasks.
+The `etcd <https://etcd.io/>`_ cluster is used to stores all the
+information about the VDA. e.g., it stores the configuration of the
+virtual disk arrays, the disk node / controller node status. It is
+also coordinators, e.g., multiple monitors register themselves to
+the etcd and then they can arrange their tasks.
 
 .. _monitor-label:
 
@@ -69,7 +69,7 @@ SPDK application and dn_agent.
 
 cn_agent
 ^^^^^^^^
-The cn_agent runs on the Controller Node (CN). It accepts rpc from
+The cn_agent runs on the Controller Node (CN). It accepts gRPC from
 portal and monitor, sends API to spdk application, creates/deletes
 resources about the controllers of the disk arrays (DA).
 
