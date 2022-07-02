@@ -2,31 +2,62 @@ DevelopmentEnvironment
 ======================
 Follow below steps to set up the development environment.
 
-* Install golang, please refer the
-  `golang official doc <https://golang.org/doc/install>`_
+* Install the latest version of below tools to your development system:
 
-* Install below tools to the development environment:
   * git
   * make
-  * protobuf compiler
+  * curl
+  * unzip
   * gcc
-  The install commands depend on the operation system. For ubuntu
-  20.04 system, you can run below command to install them::
+  * pkg-config
 
-    sudo apt install -y git make protobuf-compiler gcc
+* Install golang
 
-* Install the build time golang module dependencies. Before this step,
-  please make sure the ``go`` path has been set correctly, e.g.::
+  The recommended golang vesion is ``1.18.3``. An older version may not
+  work. You may follow below steps, they are copied and modified from
+  the `golang official doc <https://golang.org/doc/install>`_::
 
-    export PATH=$PATH:/usr/local/go/bin
+    curl -L -O https://go.dev/dl/go1.18.3.linux-amd64.tar.gz
+    rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.18.3.linux-amd64.tar.gz
 
-  Then run below commands::
+  Then add ``/usr/local/go/bin`` to the ``PATH`` environment variable, you
+  may add below lines to your $HOME/.profile::
 
-    go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
-    go get github.com/golang/mock/mockgen
+    export PATH="$PATH:/usr/local/go/bin"
 
-* Get the latest vda code then build it::
+  Run below command to verify golang is installed::
+
+    go version
+
+* Install protoc
+
+  The `gRPC official doc <https://grpc.io/docs/protoc-installation/>`_
+  provide multiple ways to install protoc. Below is an OS
+  independently way::
+
+    curl -L -O https://github.com/protocolbuffers/protobuf/releases/download/v21.2/protoc-21.2-linux-x86_64.zip
+    unzip protoc-21.2-linux-x86_64.zip -d $HOME/.local
+
+  Export ``$HOME/.local/bin`` to the ``PATH`` environment variable::
+
+    export PATH="$PATH:$HOME/.local/bin"
+
+* Check out VDA source code and install golang build dependencies
+
+  Check out VDA source code::
 
     git clone https://github.com/virtual-disk-array/vda
+
+  Go to the ``vda`` directory::
+
     cd vda
+
+  Run ``go install`` to install build dependencies::
+
+    go install google.golang.org/protobuf/cmd/protoc-gen-go
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
+    go install github.com/golang/mock/mockgen
+
+  Finally you can run the ``make`` command to compile VDA::
+
     make
