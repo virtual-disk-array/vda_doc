@@ -32,10 +32,9 @@ version is v3.5.0 and we choose the linux-amd64 one::
   curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz
   tar xvf etcd-v3.5.0-linux-amd64.tar.gz
 
-Go to the etcd directory and launch etcd::
+Launch etcd::
 
-  cd etcd-v3.5.0-linux-amd64
-  ./etcd --listen-client-urls http://localhost:2389 \
+  etcd-v3.5.0-linux-amd64/etcd --listen-client-urls http://localhost:2389 \
   --advertise-client-urls http://localhost:2389 \
   --listen-peer-urls http://localhost:2390 \
   --name etcd0 --data-dir /tmp/vda_data/etcd0.data \
@@ -45,57 +44,43 @@ Here we don't use the default etcd port nubmers. Letter we will let
 the VDA control plane components (:ref:`portal <portal-label>` and
 :ref:`monitor <monitor-label>`) connect to the etcd 2398 port.
 
-Install spdk
-^^^^^^^^^^^^
-Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
-::
-
-  git clone https://github.com/spdk/spdk
-  cd spdk
-  git submodule update --init
-  sudo scripts/pkgdep.sh
-  ./configure
-  make
-
-Initialize the spdk environment (run it once after every reboot)::
-
-  sudo scripts/setup.sh
-
 Install vda
 ^^^^^^^^^^^
 Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
 Download and unzip the package. In this doc, the latest version is
 v0.1.0::
 
-  curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-  unzip vda_linux_amd64_v0.1.0.zip
+  curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+  tar xvf vda_linux_amd64_v0.2.0.tar.gz
+
+Go to the `vda_linux_amd64_v0.2.0` directory. We will run all the
+following commands in this directory::
+
+  cd vda_linux_amd64_v0.2.0
+
+
+Prepare SPDK environment
+^^^^^^^^^^^^^^^^^^^^^^^^
+The vda dataplane code is a SPDK application, so we should configure
+the SPDK environment before we run it::
+
+  sudo ./spdk/scripts/setup.sh
+
 
 Launch DN components
 ^^^^^^^^^^^^^^^^^^^^
-For each :ref:`DN <dn-label>`, we should run a spdk application and the dn_agent. First,
-go to the spdk directory and launch the spdk application::
+For each :ref:`DN <dn-label>`, we should run a dataplane application
+and a controlplane agent. Launch the dataplane application::
 
-  sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
+  sudo ./vda_dataplane --config ./dataplane_config.json \
+  --rpc-socket /tmp/vda_data/dn.sock > /tmp/vda_data/dn.log 2>&1 &
 
-Wait until the ``/tmp/vda_data/dn.sock`` is created (1 or 2 seconds
-should be enough), then run below commands::
+Change the dn.sock permission so the controlplane agent could
+communicate with it::
 
-  sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
-  sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-  sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
-  sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
   sudo chmod 777 /tmp/vda_data/dn.sock
 
-We don't launch the spdk app spdk_tgt directly. We use the
-``--wait-for-rpc`` option to let it stay in the init stage. Then
-invoke the ``bdev_set_options`` to disable the auto examine. It is
-required by the VDA. Some bdevs will be exported to :ref:`CN <cn-label>`.
-So they shouldn't be examined by :ref:`DN <dn-label>`. The
-``nvmf_set_crdt`` is not requried by :ref:`DN <dn-label>`, it is
-required by `CN <cn-label>`. Here we invoke ``nvmf_set_crdt`` to keep
-the DN and CN the same.
-
-Then go to the vda binary directory (vda_linux_amd64_v0.1.0) and run below commands::
+Launch the controlplane agent::
 
   ./vda_dn_agent --network tcp --address '127.0.0.1:9720' \
   --sock-path /tmp/vda_data/dn.sock --sock-timeout 10 \
@@ -119,26 +104,18 @@ can find below log::
 
 Launch CN components
 ^^^^^^^^^^^^^^^^^^^^
-For each :ref:`CN <cn-label>`, we should run a spdk applicaiton and the cn-agent. First,
-go to the spdk directory and launch the spdk application::
+For each :ref:`CN <cn-label>`, we should run a dataplane application
+and a controlplane agent. Launch the dataplane application::
 
-  sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn.sock --wait-for-rpc > /tmp/vda_data/cn.log 2>&1 &
+  sudo ./vda_dataplane --config ./dataplane_config.json \
+  --rpc-socket /tmp/vda_data/cn.sock > /tmp/vda_data/cn.log 2>&1 &
 
-Wait until the ``/tmp/vda_data/cn.sock`` is created (1 or 2 seconds
-should be enough), then run below commands::
+Change the cn.sock permission so the controlplane agent could
+communicate with it::
 
-  sudo scripts/rpc.py -s /tmp/vda_data/cn.sock bdev_set_options -d
-  sudo scripts/rpc.py -s /tmp/vda_data/cn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-  sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_start_init
-  sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_wait_init
   sudo chmod 777 /tmp/vda_data/cn.sock
 
-Similar as DN, we invoke ``bdev_set_options`` to disable auto examine,
-and we invoke ``nvmf_set_crdt`` to provide the delay time. The
-``nvmf_set_crdt`` is requried. If we don't set it, the :ref:`cntlr <cntlr-label>`
-failover may have problem.
-
-Then go to the vda binary directory (vda_linux_amd64_v0.1.0) and run below commands::
+Launch the controlpane agent::
 
   ./vda_cn_agent --network tcp --address '127.0.0.1:9820' \
   --sock-path /tmp/vda_data/cn.sock --sock-timeout 10 \
@@ -160,7 +137,7 @@ can find below log::
 
 Launch portal
 ^^^^^^^^^^^^^
-Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
+Run below command::
 
   ./vda_portal --portal-address '127.0.0.1:9520' --portal-network tcp \
   --etcd-endpoints localhost:2389 \
@@ -484,7 +461,8 @@ Clean up all resources
     killall vda_dn_agent
     killall vda_cn_agent
     killall etcd
-    sudo killall reactor_0
+    ./spdk/scripts/rpc.py -s /tmp/vda_data/dn.sock spdk_kill_instance SIGTERM
+    ./spdk/scripts/rpc.py -s /tmp/vda_data/cn.sock spdk_kill_instance SIGTERM
 
 * Delete the work directory::
 

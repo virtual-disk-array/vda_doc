@@ -8,14 +8,10 @@ Overview
 is an open source block storage system (similar as AWS EBS or Ceph block
 device). It could be used as
 `persistent volumes <https://kubernetes.io/docs/concepts/storage/persistent-volumes/>`_
-in kubernetes. A blocke device in VDA looks like a traditional disk
-array, which has one or more controllers and several disks. users can
-configure disk array features like snapshot, encryption, and raid
-(only raid0 currently). To get a high performance, the VDA uses
-`SPDK <https://spdk.io/doc/about.html>`_
-as dataplane. In VDA, all the controllers and disks are spdk
-applications. They are connected by
-`NVMeOF <https://nvmexpress.org/developers/nvme-of-specification/>`_ .
+in kubernetes. The block devices in VDA can be accessed throught the
+standard NVMeOF protool. So it doesn't need a dataplane agent on the
+host side. And the host could even offload the NVMeOF traffic to a
+hardware adaptor.
 
 .. image:: /images/vda_cluster_arch.png
 
