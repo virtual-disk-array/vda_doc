@@ -38,10 +38,9 @@ version is v3.5.0 and we choose the linux-amd64 one::
   curl -L -O https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz
   tar xvf etcd-v3.5.0-linux-amd64.tar.gz
 
-Go to the etcd directory and launch it::
+Go Launch etcd::
 
-  cd etcd-v3.5.0-linux-amd64
-  ./etcd --listen-client-urls http://localhost:2389 \
+  etcd-v3.5.0-linux-amd64/etcd --listen-client-urls http://localhost:2389 \
   --advertise-client-urls http://localhost:2389 \
   --listen-peer-urls http://localhost:2390 \
   --name etcd0 --data-dir /tmp/vda_data/etcd0.data \
@@ -51,53 +50,44 @@ Here we don't use the default etcd port nubmers. Letter we will let
 the VDA control plane components (:ref:`portal <portal-label>` and
 :ref:`monitor <monitor-label>`) connect to the etcd 2398 port.
 
-Install spdk
-^^^^^^^^^^^^
-Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
-::
-
-  git clone https://github.com/spdk/spdk
-  cd spdk
-  git submodule update --init
-  sudo scripts/pkgdep.sh
-  ./configure
-  make
-
-After build the spdk, we should initialize the environment for spdk. We can
-use the ``scripts/setup.sh`` in the spdk directory. Here we specific
-8G hugepages::
-
-  sudo HUGEMEM=8192 scripts/setup.sh
-
-We will launch multiple spdk applications in this server, the default
-2G hugepages is not enough. So we set it to 8G.
-
 Install vda
 ^^^^^^^^^^^
 Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
 Download and unzip the package. In this doc, the latest version is
-v0.1.0::
+v0.2.0::
 
-  curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-  unzip vda_linux_amd64_v0.1.0.zip
+  curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+  tar xvf vda_linux_amd64_v0.2.0.tar.gz
+
+Go to the `vda_linux_amd64_v0.2.0` directory. We will run all the
+following commands in this directory::
+
+  cd vda_linux_amd64_v0.2.0
+
+Prepare SPDK environment
+^^^^^^^^^^^^^^^^^^^^^^^^
+The vda dataplane code is a SPDK application, so we should configure
+the SPDK environment before we run it. Here we use 8G hugepages
+because we will launch multiple SPDK applications. The default 2G
+hugepage is not large enough::
+
+  sudo HUGEMEM=8192 ./spdk/scripts/setup.sh
+
 
 Launch dn0
 ^^^^^^^^^^
-Go to the spdk directory and launch the spdk application::
+Launch the dataplane application::
 
-  sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn0.sock --wait-for-rpc > /tmp/vda_data/dn0.log 2>&1 &
+  sudo ./vda_dataplane --config ./dataplane_config.json \
+  --rpc-socket /tmp/vda_data/dn0.sock > /tmp/vda_data/dn0.log 2>&1 &
 
-Wait until the ``/tmp/vda_data/dn0.sock`` is created (1 or 2 seconds
-should be enough), then run below commands::
+Change the dn0.sock permission so the controlplane agent could
+communicate with it::
 
-  sudo scripts/rpc.py -s /tmp/vda_data/dn0.sock bdev_set_options -d
-  sudo scripts/rpc.py -s /tmp/vda_data/dn0.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-  sudo scripts/rpc.py -s /tmp/vda_data/dn0.sock framework_start_init
-  sudo scripts/rpc.py -s /tmp/vda_data/dn0.sock framework_wait_init
   sudo chmod 777 /tmp/vda_data/dn0.sock
 
-Then go to the vda binary directory (vda_linux_amd64_v0.1.0), run below commands::
-
+Launch the controlplane agent::
+  
   ./vda_dn_agent --network tcp --address '127.0.0.1:9720' \
   --sock-path /tmp/vda_data/dn0.sock --sock-timeout 10 \
   --lis-conf '{"trtype":"tcp","traddr":"127.0.0.1","adrfam":"ipv4","trsvcid":"4420"}' \
@@ -109,20 +99,17 @@ listen on 127.0.0.1:4420.
 
 Launch dn1
 ^^^^^^^^^^
-Go to the spdk directory and launch the spdk application::
-  
-  sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn1.sock --wait-for-rpc > /tmp/vda_data/dn1.log 2>&1 &
+Launch the dataplane application::
 
-Wait until the ``/tmp/vda_data/dn1.sock`` is created (1 or 2 seconds
-should be enough), then run below commands::
+  sudo ./vda_dataplane --config ./dataplane_config.json \
+  --rpc-socket /tmp/vda_data/dn1.sock > /tmp/vda_data/dn1.log 2>&1 &
 
-  sudo scripts/rpc.py -s /tmp/vda_data/dn1.sock bdev_set_options -d
-  sudo scripts/rpc.py -s /tmp/vda_data/dn1.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-  sudo scripts/rpc.py -s /tmp/vda_data/dn1.sock framework_start_init
-  sudo scripts/rpc.py -s /tmp/vda_data/dn1.sock framework_wait_init
+Change the dn0.sock permission so the controlplane agent could
+communicate with it::
+
   sudo chmod 777 /tmp/vda_data/dn1.sock
 
-Then go to the vda binary directory (vda_linux_amd64_v0.1.0), run below commands::
+Launch the controlplane agent::
 
   ./vda_dn_agent --network tcp --address '127.0.0.1:9721' \
   --sock-path /tmp/vda_data/dn1.sock --sock-timeout 10 \
@@ -135,20 +122,17 @@ listen on 127.0.0.1:4421.
 
 Launch cn0
 ^^^^^^^^^^
-Go to the spdk directory and launch the spdk application::
+Launch the dataplane application::
 
-  sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn0.sock --wait-for-rpc > /tmp/vda_data/cn0.log 2>&1 &
+  sudo ./vda_dataplane --config ./dataplane_config.json \
+  --rpc-socket /tmp/vda_data/cn0.sock > /tmp/vda_data/cn0.log 2>&1 &
 
-Wait until the ``/tmp/vda_data/cn0.sock`` is created (1 or 2 seconds
-should be enough), then run below commands::
+Change the cn0.sock permission so the controlplane agent could
+communicate with it::
 
-  sudo scripts/rpc.py -s /tmp/vda_data/cn0.sock bdev_set_options -d
-  sudo scripts/rpc.py -s /tmp/vda_data/cn0.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-  sudo scripts/rpc.py -s /tmp/vda_data/cn0.sock framework_start_init
-  sudo scripts/rpc.py -s /tmp/vda_data/cn0.sock framework_wait_init
   sudo chmod 777 /tmp/vda_data/cn0.sock
 
-Then go to the vda binary directory (vda_linux_amd64_v0.1.0), run below commands::
+Launch the controlplane agent::
 
   ./vda_cn_agent --network tcp --address '127.0.0.1:9820' \
   --sock-path /tmp/vda_data/cn0.sock --sock-timeout 10 \
@@ -161,20 +145,17 @@ listen on 127.0.0.1:4430.
 
 Launch cn1
 ^^^^^^^^^^
-Go to the spdk directory and launch the spdk application::
+Launch the dataplane application::
 
-  sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn1.sock --wait-for-rpc > /tmp/vda_data/cn1.log 2>&1 &
+  sudo ./vda_dataplane --config ./dataplane_config.json \
+  --rpc-socket /tmp/vda_data/cn1.sock > /tmp/vda_data/cn1.log 2>&1 &
 
-Wait until the ``/tmp/vda_data/cn1.sock`` is created (1 or 2 seconds
-should be enough), then run below commands::
+Change the cn0.sock permission so the controlplane agent could
+communicate with it::
 
-  sudo scripts/rpc.py -s /tmp/vda_data/cn1.sock bdev_set_options -d
-  sudo scripts/rpc.py -s /tmp/vda_data/cn1.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-  sudo scripts/rpc.py -s /tmp/vda_data/cn1.sock framework_start_init
-  sudo scripts/rpc.py -s /tmp/vda_data/cn1.sock framework_wait_init
   sudo chmod 777 /tmp/vda_data/cn1.sock
 
-Then go to the vda binary directory (vda_linux_amd64_v0.1.0), run below commands::
+Launch the controlplane agent::
 
   ./vda_cn_agent --network tcp --address '127.0.0.1:9821' \
   --sock-path /tmp/vda_data/cn1.sock --sock-timeout 10 \
@@ -187,7 +168,7 @@ listen on 127.0.0.1:4431.
 
 Launch portal
 ^^^^^^^^^^^^^
-Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
+Run below command::
 
   ./vda_portal --portal-address '127.0.0.1:9520' --portal-network tcp \
   --etcd-endpoints localhost:2389 \
@@ -195,7 +176,7 @@ Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
 
 Launch monitor
 ^^^^^^^^^^^^^^
-Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
+Run below command::
 
   ./vda_monitor --etcd-endpoints localhost:2389 \
   > /tmp/vda_data/monitor.log 2>&1 &
@@ -716,7 +697,10 @@ Clean up all resources
     killall vda_dn_agent
     killall vda_cn_agent
     killall etcd
-    sudo killall reactor_0
+    ./spdk/scripts/rpc.py -s /tmp/vda_data/dn0.sock spdk_kill_instance SIGTERM
+    ./spdk/scripts/rpc.py -s /tmp/vda_data/dn1.sock spdk_kill_instance SIGTERM
+    ./spdk/scripts/rpc.py -s /tmp/vda_data/cn0.sock spdk_kill_instance SIGTERM
+    ./spdk/scripts/rpc.py -s /tmp/vda_data/cn1.sock spdk_kill_instance SIGTERM
 
 * Delete the work directory::
 

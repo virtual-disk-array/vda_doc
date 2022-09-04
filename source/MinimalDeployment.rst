@@ -154,7 +154,7 @@ can find below log::
 
 Launch monitor
 ^^^^^^^^^^^^^^
-Go to the vda binary directory (vda_linux_amd64_v0.1.0), run below command::
+Run below command::
 
   ./vda_monitor --etcd-endpoints localhost:2389 \
   > /tmp/vda_data/monitor.log 2>&1 &

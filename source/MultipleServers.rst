@@ -1,7 +1,7 @@
 Multiple Servers Deployment
 ===========================
 
-A production environment have lots of :ref:`DNs <dn-label>` and
+A production environment may have lots of :ref:`DNs <dn-label>` and
 :ref:`CNs <cn-label>`, and may have multiple :ref:`portals <portal-label>`
 and  :ref:`monitors <monitor-label>` for high availability and
 scalability. In this tutorial, we will deploy two instances for each
@@ -64,43 +64,32 @@ Login to the dn0 server (192.168.1.10).
 
     mkdir -p /tmp/vda_data
 
-* Install spdk
-  Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
-  ::
-     
-     git clone https://github.com/spdk/spdk
-     cd spdk
-     git submodule update --init
-     sudo scripts/pkgdep.sh
-     ./configure
-     make
-
-* Initialize the spdk environment (run it once after every reboot)::
-
-    sudo scripts/setup.sh
-
-* Go to the spdk directory and launch the spdk application::
-
-    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
-
-* Wait until the ``/tmp/vda_data/dn.sock`` is created (1 or 2 seconds
-  should be enough), then run below commands::
-
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
-    sudo chmod 777 /tmp/vda_data/dn.sock
-
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.1.0::
+  v0.2.0::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-    unzip vda_linux_amd64_v0.1.0.zip
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+    tar xvf vda_linux_amd64_v0.2.0.tar.gz
 
-* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_dn_agent`::
+* Go to the `vda_linux_amd64_v0.2.0` directory::
+
+    cd vda_linux_amd64_v0.2.0
+
+* Initialize the spdk environment (run it once after every reboot)::
+
+    sudo ./spdk/scripts/setup.sh
+
+* Launch the dataplane application::
+
+    sudo ./vda_dataplane --config ./dataplane_config.json \
+    --rpc-socket /tmp/vda_data/dn.sock > /tmp/vda_data/dn.log 2>&1 &
+
+* Change the dn.sock permission so the controlplane agent could communicate with it::
+
+    sudo chmod 777 /tmp/vda_data/dn.sock
+
+* Launch `vda_dn_agent`::
 
     ./vda_dn_agent --network tcp --address '192.168.1.10:9720' \
     --sock-path /tmp/vda_data/dn.sock --sock-timeout 10 \
@@ -125,48 +114,36 @@ Login to the dn1 server (192.168.1.11).
 
     mkdir -p /tmp/vda_data
 
-* Install spdk.
-    Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
-    ::
-
-       cd ~
-       git clone https://github.com/spdk/spdk
-       cd spdk
-       git submodule update --init
-       sudo scripts/pkgdep.sh
-       ./configure
-       make
-
-* Initialize the spdk environment (run it once after every reboot)::
-
-    sudo scripts/setup.sh
-
-* Go to the spdk directory and launch the spdk application::
-
-    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/dn.sock --wait-for-rpc > /tmp/vda_data/dn.log 2>&1 &
-
-* Wait until the ``/tmp/vda_data/dn.sock`` is created (1 or 2 seconds
-  should be enough), then run below commands::
-
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock bdev_set_options -d
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_start_init
-    sudo scripts/rpc.py -s /tmp/vda_data/dn.sock framework_wait_init
-    sudo chmod 777 /tmp/vda_data/dn.sock
-
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.1.0::
+  v0.2.0::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-    unzip vda_linux_amd64_v0.1.0.zip
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+    tar xvf vda_linux_amd64_v0.2.0.tar.gz
 
-* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_dn_agent`::
+* Go to the `vda_linux_amd64_v0.2.0` directory::
 
-    ./vda_dn_agent --network tcp --address '192.168.1.11:9720' \
+    cd vda_linux_amd64_v0.2.0
+
+* Initialize the spdk environment (run it once after every reboot)::
+
+    sudo ./spdk/scripts/setup.sh
+
+* Launch the dataplane application::
+
+    sudo ./vda_dataplane --config ./dataplane_config.json \
+    --rpc-socket /tmp/vda_data/dn.sock > /tmp/vda_data/dn.log 2>&1 &
+
+* Change the dn.sock permission so the controlplane agent could communicate with it::
+
+    sudo chmod 777 /tmp/vda_data/dn.sock
+
+* Launch `vda_dn_agent`::
+
+    ./vda_dn_agent --network tcp --address '192.168.1.10:9720' \
     --sock-path /tmp/vda_data/dn.sock --sock-timeout 10 \
-    --lis-conf '{"trtype":"tcp","traddr":"192.168.1.11","adrfam":"ipv4","trsvcid":"4420"}' \
+    --lis-conf '{"trtype":"tcp","traddr":"192.168.1.10","adrfam":"ipv4","trsvcid":"4420"}' \
     --tr-conf '{"trtype":"TCP"}' \
     > /tmp/vda_data/dn_agent.log 2>&1 &
 
@@ -187,44 +164,32 @@ Login to the cn0 server (192.168.1.12).
 
     mkdir -p /tmp/vda_data
 
-* Install spdk
-  Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
-  ::
-
-     cd ~
-     git clone https://github.com/spdk/spdk
-     cd spdk
-     git submodule update --init
-     sudo scripts/pkgdep.sh
-     ./configure
-     make
-
-* Initialize the spdk environment (run it once after every reboot)::
-
-    sudo scripts/setup.sh
-
-* Go to the spdk directory and launch the spdk application::
-
-    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn.sock --wait-for-rpc > /tmp/vda_data/cn.log 2>&1 &
-
-* Wait until the ``/tmp/vda_data/cn.sock`` is created (1 or 2 seconds
-  should be enough), then run below commands::
-
-    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock bdev_set_options -d
-    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_start_init
-    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_wait_init
-    sudo chmod 777 /tmp/vda_data/cn.sock
-
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.1.0::
+  v0.2.0::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-    unzip vda_linux_amd64_v0.1.0.zip
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+    tar xvf vda_linux_amd64_v0.2.0.tar.gz
 
-* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_cn_agent`::
+* Go to the `vda_linux_amd64_v0.2.0` directory::
+
+    cd vda_linux_amd64_v0.2.0
+
+* Initialize the spdk environment (run it once after every reboot)::
+
+    sudo ./spdk/scripts/setup.sh
+
+* Launch the dataplane application::
+
+    sudo ./vda_dataplane --config ./dataplane_config.json \
+    --rpc-socket /tmp/vda_data/cn.sock > /tmp/vda_data/cn.log 2>&1 &
+
+* Change the dn.sock permission so the controlplane agent could communicate with it::
+
+    sudo chmod 777 /tmp/vda_data/cn.sock
+
+* Launch `vda_cn_agent`::
 
     ./vda_cn_agent --network tcp --address '192.168.1.12:9820' \
     --sock-path /tmp/vda_data/cn.sock --sock-timeout 10 \
@@ -240,44 +205,32 @@ Login to the cn1 server (192.168.1.13).
 
     mkdir -p /tmp/vda_data
 
-* Install spdk
-  Follow the `SPDK Getting Started doc <https://spdk.io/doc/getting_started.html>`_.
-  ::
-
-     cd ~
-     git clone https://github.com/spdk/spdk
-     cd spdk
-     git submodule update --init
-     sudo scripts/pkgdep.sh
-     ./configure
-     make
-
-* Initialize the spdk environment (run it once after every reboot)::
-
-    sudo scripts/setup.sh
-
-* Go to the spdk directory and launch the spdk application::
-
-    sudo build/bin/spdk_tgt --rpc-socket /tmp/vda_data/cn.sock --wait-for-rpc > /tmp/vda_data/cn.log 2>&1 &
-
-* Wait until the ``/tmp/vda_data/cn.sock`` is created (1 or 2 seconds
-  should be enough), then run below commands::
-
-    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock bdev_set_options -d
-    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock nvmf_set_crdt -t1 100 -t2 100 -t3 100
-    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_start_init
-    sudo scripts/rpc.py -s /tmp/vda_data/cn.sock framework_wait_init
-    sudo chmod 777 /tmp/vda_data/cn.sock
-
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.1.0::
+  v0.2.0::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-    unzip vda_linux_amd64_v0.1.0.zip
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+    tar xvf vda_linux_amd64_v0.2.0.tar.gz
 
-* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_cn_agent`::
+* Go to the `vda_linux_amd64_v0.2.0` directory::
+
+    cd vda_linux_amd64_v0.2.0
+
+* Initialize the spdk environment (run it once after every reboot)::
+
+    sudo ./spdk/scripts/setup.sh
+
+* Launch the dataplane application::
+
+    sudo ./vda_dataplane --config ./dataplane_config.json \
+    --rpc-socket /tmp/vda_data/cn.sock > /tmp/vda_data/cn.log 2>&1 &
+
+* Change the dn.sock permission so the controlplane agent could communicate with it::
+
+    sudo chmod 777 /tmp/vda_data/cn.sock
+
+* Launch `vda_cn_agent`::
 
     ./vda_cn_agent --network tcp --address '192.168.1.13:9820' \
     --sock-path /tmp/vda_data/cn.sock --sock-timeout 10 \
@@ -296,12 +249,16 @@ Login to the portal0 server (192.168.1.17).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.1.0::
+  v0.2.0::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-    unzip vda_linux_amd64_v0.1.0.zip
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+    tar xvf vda_linux_amd64_v0.2.0.tar.gz
 
-* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_portal`::
+* Go to the `vda_linux_amd64_v0.2.0` directory::
+
+    cd vda_linux_amd64_v0.2.0
+
+* Launch `vda_portal`::
 
     ./vda_portal --portal-address '192.168.1.17:9520' --portal-network tcp \
     --etcd-endpoints 192.168.1.16:2389 \
@@ -318,12 +275,16 @@ Login to the portal1 server (192.168.1.18).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.1.0::
+  v0.2.0::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-    unzip vda_linux_amd64_v0.1.0.zip
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+    tar xvf vda_linux_amd64_v0.2.0.tar.gz
 
-* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_portal`::
+* Go to the `vda_linux_amd64_v0.2.0` directory::
+
+    cd vda_linux_amd64_v0.2.0
+
+* Launch `vda_portal`::
 
     ./vda_portal --portal-address '192.168.1.18:9520' --portal-network tcp \
     --etcd-endpoints 192.168.1.16:2389 \
@@ -340,12 +301,16 @@ Login to the monitor0 server (192.168.1.19).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.1.0::
+  v0.2.0::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-    unzip vda_linux_amd64_v0.1.0.zip
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+    tar xvf vda_linux_amd64_v0.2.0.tar.gz
 
-* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_monitor`::
+* Go to the `vda_linux_amd64_v0.2.0` directory::
+
+    cd vda_linux_amd64_v0.2.0
+
+* Launch `vda_monitor`::
 
     ./vda_monitor --etcd-endpoints 192.168.1.16:2389 \
     > /tmp/vda_data/monitor.log 2>&1 &
@@ -361,27 +326,35 @@ Login to the monitor0 server (192.168.1.20).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.1.0::
+  v0.2.0::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-    unzip vda_linux_amd64_v0.1.0.zip
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+    tar xvf vda_linux_amd64_v0.2.0.tar.gz
 
-* Go to the vda binary directory (vda_linux_amd64_v0.1.0), launch `vda_monitor`::
+* Go to the `vda_linux_amd64_v0.2.0` directory::
+
+    cd vda_linux_amd64_v0.2.0
+
+* Launch `vda_monitor`::
 
     ./vda_monitor --etcd-endpoints 192.168.1.16:2389 \
     > /tmp/vda_data/monitor.log 2>&1 &
 
-Operate the VDA cluster
-^^^^^^^^^^^^^^^^^^^^^^^
+Operate against the VDA cluster
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Login to the cli server (192.168.1.21)
 
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.1.0::
+  v0.2.0::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.1.0/vda_linux_amd64_v0.1.0.zip
-    unzip vda_linux_amd64_v0.1.0.zip
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
+    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+
+* Go to the `vda_linux_amd64_v0.2.0` directory::
+
+    cd vda_linux_amd64_v0.2.0
 
 * Create dn0::
 
@@ -660,12 +633,17 @@ Login to host1 (192.168.1.15)
 
 Cleanup the environment
 ^^^^^^^^^^^^^^^^^^^^^^^
-In the above comands, we let the cli connect to the portal0
-(192.168.1.17). Here we let the cli connect to the portal1
-(192.167.1.18). They are equivalent.
+In the above comands, the cli connect to the portal0
+(192.168.1.17). Here we connect to the portal1 (192.167.1.18). They
+are equivalent.
 
-* Login to the cli server (192.168.1.21), go to the vda binary
-  directory, run below commands::
+* Login to the cli server (192.168.1.21)
+
+* Go to the `vda_linux_amd64_v0.2.0` directory::
+
+    cd vda_linux_amd64_v0.2.0
+
+* run below commands::
 
     ./vda_cli --portal-addr 192.168.1.18:9520 exp delete --da-name da0 --exp-name exp0b
     ./vda_cli --portal-addr 192.168.1.18:9520 exp delete --da-name da1 --exp-name exp1a
@@ -681,13 +659,15 @@ In the above comands, we let the cli connect to the portal0
 * Login to dn0 and dn0, run below commands::
 
     killall vda_dn_agent
-    sudo killall reactor_0
+    cd vda_linux_amd64_v0.2.0
+    ./spdk/scripts/rpc.py -s /tmp/vda_data/dn.sock spdk_kill_instance SIGTERM
     rm -rf /tmp/vda_data
 
 * Login to cn0 and cn1, run below commands::
 
     killall vda_cn_agent
-    sudo killall reactor_0
+    cd vda_linux_amd64_v0.2.0
+    ./spdk/scripts/rpc.py -s /tmp/vda_data/cn.sock spdk_kill_instance SIGTERM
     rm -rf /tmp/vda_data
 
 * Login to the portal0 and port1, run below commands::
