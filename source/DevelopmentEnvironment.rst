@@ -9,7 +9,15 @@ Follow below steps to set up the development environment.
   * curl
   * unzip
   * gcc
+  * jq
   * pkg-config
+
+.. note::
+
+   If you are using ubuntu system, the ``sudo apt install pkg-config``
+   command may install a pretty old pkg-config which doesn't work for
+   the vda dataplane application. Please try below command to install a
+   new pkg-config: ``sudo apt install pkgconf``
 
 * Install golang
 
@@ -52,7 +60,16 @@ Follow below steps to set up the development environment.
 
     cd vda
 
-  Run ``go install`` to install build dependencies::
+  Install the dataplane dependencies::
+
+    ./scripts/dataplane/dataplane_prepare.sh
+
+  The above script will invoke the ``pkgdep.sh`` of the
+  SPDK. If you get any problem, you may try to follow the
+  `SPDK Getting Started <https://spdk.io/doc/getting_started.html>`_ ,
+  verify whether you can build the official SPDK without any probelm.
+
+  Run ``go install`` to install the controlplane build dependencies::
 
     go install google.golang.org/protobuf/cmd/protoc-gen-go
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
