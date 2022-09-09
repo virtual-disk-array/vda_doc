@@ -85,9 +85,9 @@ Login to the dn0 server (192.168.1.10).
     sudo ./vda_dataplane --config ./dataplane_config.json \
     --rpc-socket /tmp/vda_data/dn.sock > /tmp/vda_data/dn.log 2>&1 &
 
-* Change the dn.sock permission so the controlplane agent could communicate with it::
+* Change the owner of dn.sock, so the controlplane agent could communicate with it::
 
-    sudo chmod 777 /tmp/vda_data/dn.sock
+    sudo chown $(id -u):$(id -g) /tmp/vda_data/dn.sock
 
 * Launch `vda_dn_agent`::
 
@@ -135,9 +135,9 @@ Login to the dn1 server (192.168.1.11).
     sudo ./vda_dataplane --config ./dataplane_config.json \
     --rpc-socket /tmp/vda_data/dn.sock > /tmp/vda_data/dn.log 2>&1 &
 
-* Change the dn.sock permission so the controlplane agent could communicate with it::
+* Change the owner of dn.sock, so the controlplane agent could communicate with it::
 
-    sudo chmod 777 /tmp/vda_data/dn.sock
+    sudo chown $(id -u):$(id -g) /tmp/vda_data/dn.sock
 
 * Launch `vda_dn_agent`::
 
@@ -185,9 +185,9 @@ Login to the cn0 server (192.168.1.12).
     sudo ./vda_dataplane --config ./dataplane_config.json \
     --rpc-socket /tmp/vda_data/cn.sock > /tmp/vda_data/cn.log 2>&1 &
 
-* Change the dn.sock permission so the controlplane agent could communicate with it::
+* Change the owner of cn.sock, so the controlplane agent could communicate with it::
 
-    sudo chmod 777 /tmp/vda_data/cn.sock
+    sudo chown $(id -u):$(id -g) /tmp/vda_data/cn.sock
 
 * Launch `vda_cn_agent`::
 
@@ -226,9 +226,9 @@ Login to the cn1 server (192.168.1.13).
     sudo ./vda_dataplane --config ./dataplane_config.json \
     --rpc-socket /tmp/vda_data/cn.sock > /tmp/vda_data/cn.log 2>&1 &
 
-* Change the dn.sock permission so the controlplane agent could communicate with it::
+* Change the cn.sock permission so the controlplane agent could communicate with it::
 
-    sudo chmod 777 /tmp/vda_data/cn.sock
+    sudo chown $(id -u):$(id -g) /tmp/vda_data/cn.sock
 
 * Launch `vda_cn_agent`::
 

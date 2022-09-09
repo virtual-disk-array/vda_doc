@@ -81,10 +81,10 @@ Launch the dataplane application::
   sudo ./vda_dataplane --config ./dataplane_config.json \
   --rpc-socket /tmp/vda_data/dn0.sock > /tmp/vda_data/dn0.log 2>&1 &
 
-Change the dn0.sock permission so the controlplane agent could
+Change the ower of dn0.sock, so the controlplane agent could
 communicate with it::
 
-  sudo chmod 777 /tmp/vda_data/dn0.sock
+  sudo chown $(id -u):$(id -g) /tmp/vda_data/dn0.sock
 
 Launch the controlplane agent::
   
@@ -104,10 +104,10 @@ Launch the dataplane application::
   sudo ./vda_dataplane --config ./dataplane_config.json \
   --rpc-socket /tmp/vda_data/dn1.sock > /tmp/vda_data/dn1.log 2>&1 &
 
-Change the dn0.sock permission so the controlplane agent could
+Change the owner of dn0.sock, so the controlplane agent could
 communicate with it::
 
-  sudo chmod 777 /tmp/vda_data/dn1.sock
+  sudo chown $(id -u):$(id -g) /tmp/vda_data/dn1.sock
 
 Launch the controlplane agent::
 
@@ -127,10 +127,10 @@ Launch the dataplane application::
   sudo ./vda_dataplane --config ./dataplane_config.json \
   --rpc-socket /tmp/vda_data/cn0.sock > /tmp/vda_data/cn0.log 2>&1 &
 
-Change the cn0.sock permission so the controlplane agent could
+Change the owner of cn0.sock, so the controlplane agent could
 communicate with it::
 
-  sudo chmod 777 /tmp/vda_data/cn0.sock
+  sudo chown $(id -u):$(id -g) /tmp/vda_data/cn0.sock
 
 Launch the controlplane agent::
 
@@ -150,10 +150,10 @@ Launch the dataplane application::
   sudo ./vda_dataplane --config ./dataplane_config.json \
   --rpc-socket /tmp/vda_data/cn1.sock > /tmp/vda_data/cn1.log 2>&1 &
 
-Change the cn0.sock permission so the controlplane agent could
+Change the owne of cn0.sock, so the controlplane agent could
 communicate with it::
 
-  sudo chmod 777 /tmp/vda_data/cn1.sock
+  sudo chown $(id -u):$(id -g) /tmp/vda_data/cn1.sock
 
 Launch the controlplane agent::
 

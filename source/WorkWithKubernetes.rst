@@ -47,9 +47,9 @@ The steps are similar as the :ref:`Minimal Deployment <minimal-deployment-label>
     sudo ./vda_dataplane --config ./dataplane_config.json \
     --rpc-socket /tmp/vda_data/dn.sock > /tmp/vda_data/dn.log 2>&1 &
 
-* Change the dn.sock permission::
+* Change the ower of dn.sock::
 
-    sudo chmod 777 /tmp/vda_data/dn.sock
+    sudo chown $(id -u):$(id -g) /tmp/vda_data/dn.sock
 
 * Launch DN controplane::
 
@@ -67,9 +67,9 @@ The steps are similar as the :ref:`Minimal Deployment <minimal-deployment-label>
     --tr-conf '{"trtype":"TCP"}' \
     > /tmp/vda_data/cn_agent.log 2>&1 &
 
-* Change the cn.sock permission::
+* Change the ower of cn.sock,::
 
-    sudo chmod 777 /tmp/vda_data/cn.sock
+    sudo chown $(id -u):$(id -g) /tmp/vda_data/cn.sock
 
 * Launch CN controlplane::
 
