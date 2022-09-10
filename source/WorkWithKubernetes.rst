@@ -44,7 +44,8 @@ and they should work on other linux systems too.
   to install docker engine. Please choose the ``Platform`` according
   to your OS.
 
-* Manage docker as a non-root user according to the `post installation guide <https://docs.docker.com/engine/install/linux-postinstall/>`_.
+* Manage docker as a non-root user and configure Docker to start on
+  boot according to the `post installation guide <https://docs.docker.com/engine/install/linux-postinstall/>`_.
 
 * Disable selinux. You may run the ``getenforce`` command from command
   line. If the output is ``enforcing``, you should disable selinux. If your
@@ -92,7 +93,6 @@ we should install the nvme-cli and load nvme-tcp kernel module::
 
   sudo dnf install -y nvme-cli # rocky linux 8
   sudo apt install -y nvme-cli # ubuntu22.04
-  sudo modprobe nvme-tcp
 
 Download etcd
 ^^^^^^^^^^^^^
@@ -119,6 +119,12 @@ memory fragments, please reboot the system before we launch any
 services::
 
   sudo reboot
+
+Load nvme-tcp
+^^^^^^^^^^^^^
+Make sure the nvme-tcp kernel module is loaded::
+
+  sudo modprobe nvme-tcp
 
 Launch VDA
 ^^^^^^^^^^

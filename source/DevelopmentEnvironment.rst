@@ -10,6 +10,7 @@ Follow below steps to set up the development environment.
   * unzip
   * gcc
   * jq
+  * zip
   * pkg-config
 
 .. note::
@@ -78,3 +79,8 @@ Follow below steps to set up the development environment.
   Finally you can run the ``make`` command to compile VDA::
 
     make
+
+* Instal ``gh`` and zip (optinal).
+
+  We need github cli ``gh`` to make a release. Find the package from
+  the `gh release page <https://github.com/cli/cli/releases/latest>`_
