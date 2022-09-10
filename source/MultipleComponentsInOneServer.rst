@@ -54,15 +54,15 @@ Install vda
 ^^^^^^^^^^^
 Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
 Download and unzip the package. In this doc, the latest version is
-v0.2.0::
+v0.2.1::
 
-  curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-  tar xvf vda_linux_amd64_v0.2.0.tar.gz
+  curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+  tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-Go to the `vda_linux_amd64_v0.2.0` directory. We will run all the
+Go to the `vda_linux_amd64_v0.2.1` directory. We will run all the
 following commands in this directory::
 
-  cd vda_linux_amd64_v0.2.0
+  cd vda_linux_amd64_v0.2.1
 
 Prepare SPDK environment
 ^^^^^^^^^^^^^^^^^^^^^^^^

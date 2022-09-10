@@ -67,14 +67,14 @@ Login to the dn0 server (192.168.1.10).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.2.0::
+  v0.2.1::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+    tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Initialize the spdk environment (run it once after every reboot)::
 
@@ -117,14 +117,14 @@ Login to the dn1 server (192.168.1.11).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.2.0::
+  v0.2.1::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+    tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Initialize the spdk environment (run it once after every reboot)::
 
@@ -167,14 +167,14 @@ Login to the cn0 server (192.168.1.12).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.2.0::
+  v0.2.1::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+    tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Initialize the spdk environment (run it once after every reboot)::
 
@@ -208,14 +208,14 @@ Login to the cn1 server (192.168.1.13).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.2.0::
+  v0.2.1::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+    tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Initialize the spdk environment (run it once after every reboot)::
 
@@ -249,14 +249,14 @@ Login to the portal0 server (192.168.1.17).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.2.0::
+  v0.2.1::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+    tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Launch `vda_portal`::
 
@@ -275,14 +275,14 @@ Login to the portal1 server (192.168.1.18).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.2.0::
+  v0.2.1::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+    tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Launch `vda_portal`::
 
@@ -301,14 +301,14 @@ Login to the monitor0 server (192.168.1.19).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.2.0::
+  v0.2.1::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+    tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Launch `vda_monitor`::
 
@@ -326,14 +326,14 @@ Login to the monitor0 server (192.168.1.20).
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.2.0::
+  v0.2.1::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+    tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Launch `vda_monitor`::
 
@@ -347,14 +347,14 @@ Login to the cli server (192.168.1.21)
 * Install vda
   Go to the `vda latest release <https://github.com/virtual-disk-array/vda/releases/latest>`_.
   Download and unzip the package. In this doc, the latest version is
-  v0.2.0::
+  v0.2.1::
 
-    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-    tar xvf vda_linux_amd64_v0.2.0.tar.gz
+    curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+    tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Create dn0::
 
@@ -639,9 +639,9 @@ are equivalent.
 
 * Login to the cli server (192.168.1.21)
 
-* Go to the `vda_linux_amd64_v0.2.0` directory::
+* Go to the `vda_linux_amd64_v0.2.1` directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * run below commands::
 
@@ -659,14 +659,14 @@ are equivalent.
 * Login to dn0 and dn0, run below commands::
 
     killall vda_dn_agent
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
     ./spdk/scripts/rpc.py -s /tmp/vda_data/dn.sock spdk_kill_instance SIGTERM
     rm -rf /tmp/vda_data
 
 * Login to cn0 and cn1, run below commands::
 
     killall vda_cn_agent
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
     ./spdk/scripts/rpc.py -s /tmp/vda_data/cn.sock spdk_kill_instance SIGTERM
     rm -rf /tmp/vda_data
 

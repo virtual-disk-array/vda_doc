@@ -105,8 +105,8 @@ Download vda
 ^^^^^^^^^^^^
 Run below commands::
 
-  curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.0/vda_linux_amd64_v0.2.0.tar.gz
-  tar xvf vda_linux_amd64_v0.2.0.tar.gz
+  curl -L -O https://github.com/virtual-disk-array/vda/releases/download/v0.2.1/vda_linux_amd64_v0.2.1.tar.gz
+  tar xvf vda_linux_amd64_v0.2.1.tar.gz
 
 Launch services
 ---------------
@@ -144,7 +144,7 @@ The steps are similar as the :ref:`Minimal Deployment <minimal-deployment-label>
 
 * Go to the vda directory::
 
-    cd vda_linux_amd64_v0.2.0
+    cd vda_linux_amd64_v0.2.1
 
 * Prepare SPDK environment::
 
@@ -239,7 +239,7 @@ ready.
 
 Create CSI sidecars
 ^^^^^^^^^^^^^^^^^^^
-Make sure you are in the ``vda_linux_amd64_v0.2.0`` directory, then
+Make sure you are in the ``vda_linux_amd64_v0.2.1`` directory, then
 apply below resources to kubernetes::
 
   minikube kubectl -- apply -f csi_sample/controller-rbac.yaml
@@ -260,7 +260,7 @@ Make sure the ``READY`` of controller and node become ``3/3`` and ``2/2``::
 
 Create testing pod
 ^^^^^^^^^^^^^^^^^^
-Make sure you are in the ``vda_linux_amd64_v0.2.0`` directory, then
+Make sure you are in the ``vda_linux_amd64_v0.2.1`` directory, then
 apply the PVC file ::
 
   minikube kubectl -- apply -f csi_sample/testpvc.yaml

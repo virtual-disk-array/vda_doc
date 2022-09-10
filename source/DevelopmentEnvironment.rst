@@ -10,7 +10,7 @@ Follow below steps to set up the development environment.
   * unzip
   * gcc
   * jq
-  * zip
+  * zipk
   * pkg-config
 
 .. note::
